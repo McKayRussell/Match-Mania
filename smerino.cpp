@@ -1,11 +1,11 @@
 #include "fonts.h"
 
-void show_steven_credits(int y, int x)
+void show_steven_credits(int x, int y)
 {
     Rect r;
-    r.bot = y;
+    r.bot = y + 20;
     r.left = x;
     r.center = 1;
-    ggprint8b(&r, 16, 0x00ff0000, "Steven was def not here");
+    ggprint16(&r, 16, 0x00ff0000, "Steven was def not here");
 
 }

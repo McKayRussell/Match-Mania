@@ -63,6 +63,10 @@ void timeCopy(struct timespec *dest, struct timespec *source) {
 }
 //-----------------------------------------------------------------------------
 
+extern void show_mckays_credits(int, int);
+extern void show_dat_credits(int, int);
+extern void show_steven_credits(int, int);
+
 class Image {
 public:
 	int width, height;
@@ -138,7 +142,8 @@ public:
 	int showRain;
 	int showUmbrella;
 	int deflection;
-	Global() {
+	int show_credits;
+    Global() {
 		logOpen();
 		done=0;
 		xres=800;
@@ -150,6 +155,7 @@ public:
 		showRain=0;
 		showUmbrella=0;
 		deflection=0;
+        show_credits=0;
 	}
 	~Global() {
 		logClose();
@@ -545,6 +551,9 @@ int checkKeys(XEvent *e)
 				bigfoot.pos[0] = -250.0;
 			}
 			break;
+        case XK_c:
+            g.show_credits = 1;
+            break;
 		case XK_d:
 			g.deflection ^= 1;
 			break;
@@ -896,12 +905,12 @@ void drawRaindrops()
 
 void render()
 {
-	Rect r;
+    Rect r;
 
 	//Clear the screen
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
-	//
+    //
 	//draw a quad with texture
 	float wid = 120.0f;
 	glColor3f(1.0, 1.0, 1.0);
@@ -951,6 +960,12 @@ void render()
 		}
 		glDisable(GL_ALPHA_TEST);
 	}
+    
+    if (g.show_credits){
+        show_mckays_credits(g.xres / 2, g.yres / 2);
+        show_dat_credits(g.xres / 2, g.yres / 2);
+        show_steven_credits(g.xres / 2, g.yres / 2);
+    }
 
 	glDisable(GL_TEXTURE_2D);
 	//glColor3f(1.0f, 0.0f, 0.0f);
@@ -984,6 +999,7 @@ void render()
 	ggprint8b(&r, 16, c, "U - Umbrella");
 	ggprint8b(&r, 16, c, "R - Rain");
 	ggprint8b(&r, 16, c, "D - Deflection");
-	ggprint8b(&r, 16, c, "N - Sounds");
+	ggprint8b(&r, 32, c, "N - Sounds");
+    ggprint8b(&r, 16, 0x00ff0000, "Press c for credits");
 }
 
