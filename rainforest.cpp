@@ -121,11 +121,12 @@ public:
 			unlink(ppmname);
 	}
 };
-Image img[4] = {
+Image img[5] = {
 "./images/bigfoot.png",
 "./images/forest.png",
 "./images/forestTrans.png",
-"./images/umbrella.png" };
+"./images/umbrella.png",
+"./images/credits.png" };
 
 class Global {
 public:
@@ -136,6 +137,7 @@ public:
 	GLuint forestTexture;
 	GLuint forestTransTexture;
 	GLuint umbrellaTexture;
+	GLuint creditsTexture;
 	int showBigfoot;
 	int forest;
 	int silhouette;
@@ -412,6 +414,7 @@ void initOpengl(void)
 	glGenTextures(1, &g.silhouetteTexture);
 	glGenTextures(1, &g.forestTexture);
 	glGenTextures(1, &g.umbrellaTexture);
+	glGenTextures(1, &g.creditsTexture);
 	//-------------------------------------------------------------------------
 	//bigfoot
 	//
@@ -457,6 +460,15 @@ void initOpengl(void)
 	free(silhouetteData);
 	//glTexImage2D(GL_TEXTURE_2D, 0, 3, w, h, 0,
 	//	GL_RGB, GL_UNSIGNED_BYTE, bigfootImage->data);
+	//-------------------------------------------------------------------------
+	//
+	//credits
+	glBindTexture(GL_TEXTURE_2D, g.creditsTexture);
+	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, img[4].width, img[4].height,
+									0, GL_RGB, GL_UNSIGNED_BYTE, img[4].data);
 	//-------------------------------------------------------------------------
 	//
 	//forest
@@ -553,7 +565,7 @@ int checkKeys(XEvent *e)
 			}
 			break;
         case XK_c:
-            g.show_credits = 1;
+            g.show_credits ^= 1;
             break;
 		case XK_d:
 			g.deflection ^= 1;
@@ -963,7 +975,15 @@ void render()
 	}
     
     if (g.show_credits){
-        show_mckays_credits(g.xres / 2, g.yres / 2);
+        glBindTexture(GL_TEXTURE_2D, g.creditsTexture);
+		glBegin(GL_QUADS);
+			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
+			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
+			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
+			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
+		glEnd();
+		
+		show_mckays_credits(g.xres / 2, g.yres / 2);
         show_dat_credits(g.xres / 2, g.yres / 2);
         show_steven_credits(g.xres / 2, g.yres / 2);
         show_clementes_credits(g.xres / 2, g.yres / 2);

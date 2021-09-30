@@ -10,5 +10,5 @@ void show_mckays_credits(int x, int y)
     r.bot = y - 20;
     r.left = x;
     r.center = 1;
-    ggprint16(&r, 16, 0x00ff0000, "McKay did something");
+    ggprint16(&r, 16, 0x00000000, "McKay did something");
 }
