@@ -66,6 +66,7 @@ void timeCopy(struct timespec *dest, struct timespec *source) {
 extern void show_mckays_credits(int, int);
 extern void show_dat_credits(int, int);
 extern void show_steven_credits(int, int);
+extern void show_clementes_credits(int, int);
 
 class Image {
 public:
@@ -965,6 +966,7 @@ void render()
         show_mckays_credits(g.xres / 2, g.yres / 2);
         show_dat_credits(g.xres / 2, g.yres / 2);
         show_steven_credits(g.xres / 2, g.yres / 2);
+        show_clementes_credits(g.xres / 2, g.yres / 2);
     }
 
 	glDisable(GL_TEXTURE_2D);
