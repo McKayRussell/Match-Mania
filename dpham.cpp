@@ -1,3 +1,4 @@
+//Dat Pham
 #include "fonts.h"
 
 void show_dat_credits(int x, int y)
@@ -6,7 +7,7 @@ void show_dat_credits(int x, int y)
     r.bot = y;
     r.left =x;
     r.center = 1;
-    ggprint16(&r, 16, 0x00000000, "Dat did some programming"); 
+    ggprint16(&r, 16, 0x00000000, "Dat fat cat sat at a mat"); 
 
 }
 
