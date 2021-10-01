@@ -1,4 +1,7 @@
-//Author: Steven Merino
+/*Author: Steven Merino
+* FILE: smerino.cpp
+*/
+
 
 #include "fonts.h"
 
