@@ -1,3 +1,5 @@
+//Author: Steven Merino
+
 #include "fonts.h"
 
 void show_steven_credits(int x, int y)
