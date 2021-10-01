@@ -1,3 +1,4 @@
+// Author: Clemente Rodriguez 
 #include "fonts.h"
 
 void show_clementes_credits(int x, int y)
