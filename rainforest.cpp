@@ -24,7 +24,8 @@
 #include "log.h"
 //#include "ppm.h"
 #include "fonts.h"
-
+#include <fstream> //library to render round cards
+using namespace std;
 //defined types
 typedef double Flt;
 typedef double Vec[3];
@@ -146,10 +147,11 @@ public:
 	int showUmbrella;
 	int deflection;
 	int show_credits;
+    int round1, round2, round3;
     Global() {
 		logOpen();
 		done=0;
-		xres=800;
+		xres=1000;
 		yres=600;
 		showBigfoot=0;
 		forest=1;
@@ -159,6 +161,7 @@ public:
 		showUmbrella=0;
 		deflection=0;
         show_credits=0;
+        round1 = round2 = round3 = 0;
 	}
 	~Global() {
 		logClose();
@@ -208,17 +211,42 @@ class X11_wrapper {
 private:
 	Display *dpy;
 	Window win;
+    GC gc; //for rouunds
 public:
 	X11_wrapper() {
 		GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 		//GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, None };
 		XSetWindowAttributes swa;
-		setupScreenRes(640, 480);
-		dpy = XOpenDisplay(NULL);
-		if (dpy == NULL) {
+		setupScreenRes(1000, 600);
+		//dpy = XOpenDisplay(NULL);
+		//
+        //
+        //constructor
+	    if (!(dpy = XOpenDisplay(NULL))) {
+		    fprintf(stderr, "ERROR: could not open display\n");
+		    fflush(stderr);
+		    exit(EXIT_FAILURE);
+	    }
+	    int scr = DefaultScreen(dpy);
+        // window size & background color
+        win = XCreateSimpleWindow(dpy, RootWindow(dpy, scr),
+							1, 1, g.xres, g.yres, 0, 0x00ffffff, 0x00400040); 
+	    XStoreName(dpy, win, "CMPS-3480   Press Esc to exit.");
+	    gc = XCreateGC(dpy, win, 0, NULL);
+	    XMapWindow(dpy, win);
+	    XSelectInput(dpy, win, ExposureMask | StructureNotifyMask |
+							    PointerMotionMask | ButtonPressMask |
+							    ButtonReleaseMask | KeyPressMask | 
+                                KeyReleaseMask);
+
+        //
+        //
+        //
+        /*
+        if (dpy == NULL) {
 			printf("\n\tcannot connect to X server\n\n");
 			exit(EXIT_FAILURE);
-		}
+		} */
 		Window root = DefaultRootWindow(dpy);
 		XVisualInfo *vi = glXChooseVisual(dpy, 0, att);
 		if (vi == NULL) {
@@ -234,12 +262,14 @@ public:
 								CWColormap | CWEventMask, &swa);
 		GLXContext glc = glXCreateContext(dpy, vi, NULL, GL_TRUE);
 		glXMakeCurrent(dpy, win, glc);
-		setTitle();
+		setTitle();     
 	}
+
 	~X11_wrapper() {
 		XDestroyWindow(dpy, win);
 		XCloseDisplay(dpy);
 	}
+
 	void setTitle() {
 		//Set the window title bar.
 		XMapWindow(dpy, win);
@@ -280,7 +310,16 @@ public:
 	}
 	void swapBuffers() {
 		glXSwapBuffers(dpy, win);
-	}
+    }
+
+    void drawPoint(int x, int y) {
+        XDrawPoint(dpy, win, gc, x, y);
+    }
+
+    void set_color_3i(int r, int g, int b) {
+        unsigned long cref = (r<<16) + (g<<8) + b;
+        XSetForeground(dpy, gc, cref);
+    }
 } x11;
 
 //function prototypes
@@ -290,7 +329,6 @@ int checkKeys(XEvent *e);
 void init();
 void physics(void);
 void render(void);
-
 
 int main()
 {
@@ -332,9 +370,11 @@ int main()
 			//7. Reduce the countdown by our physics-rate
 			physicsCountdown -= physicsRate;
 		}
-		//Always render every frame.
-		render();
-		x11.swapBuffers();
+		//Always render every frame!
+        render();
+		if (!g.round1 && !g.round2 && !g.round3) { 
+            x11.swapBuffers();
+        }
 	}
 	//cleanupXWindows();
 	cleanup_fonts();
@@ -558,6 +598,21 @@ int checkKeys(XEvent *e)
 		return 0;
 	}
 	switch (key) {
+        case XK_1:
+            g.round2 = 0;
+            g.round3 = 0; 
+            g.round1 ^= 1; 
+            break;
+        case XK_2:
+            g.round1 = 0;
+            g.round3 = 0;
+            g.round2 ^= 1;
+            break;
+        case XK_3:
+            g.round1 = 0;
+            g.round2 = 0; 
+            g.round3 ^= 1;
+            break;
 		case XK_b:
 			g.showBigfoot ^= 1;
 			if (g.showBigfoot) {
@@ -916,6 +971,38 @@ void drawRaindrops()
 	glLineWidth(1);
 }
 
+void drawCardsBack(int row, int col) {
+    static int width, height;
+    // image is 200 by 200 but each pixel is 3
+    static unsigned char *data = new unsigned char [200 * 200 * 3];
+ 
+    ifstream fin("./images/back2.ppm");
+    char p6[8];
+    fin >> p6;
+    fin >> width >> height;
+    int maxcolor;
+    fin >> maxcolor;
+    fin.read((char *)data, 1); 
+    fin.read((char *)data, 200*200*3);
+    fin.close();
+
+    unsigned char *p = data;
+    for (int i=0; i<height; i++) {
+        for (int j=0; j<width; j++) {
+            //set the color
+            x11.set_color_3i( *(p+0), *(p+1), *(p+2));
+            p = p + 3;
+            //draw the pixel
+            for (int n = 0; n < row; n++) {   
+                for (int m = 0; m < col; m++) {  
+                    x11.drawPoint(250+j+(m*115),i+(n*160)); //position
+                }
+            }
+        }
+    }
+
+}
+
 void render()
 {
     Rect r;
@@ -927,7 +1014,20 @@ void render()
 	//draw a quad with texture
 	float wid = 120.0f;
 	glColor3f(1.0, 1.0, 1.0);
-	if (g.forest) {
+	
+    if (g.round1) {
+        drawCardsBack(3,4);
+    }
+
+    if (g.round2) {
+        drawCardsBack(4,4);
+    }
+
+    if (g.round3) {
+        drawCardsBack(3,5);
+    } 
+
+    if (g.forest) {
 		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
 		glBegin(GL_QUADS);
 			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
@@ -1014,7 +1114,10 @@ void render()
 	r.bot = g.yres - 20;
 	r.left = 10;
 	r.center = 0;
-	ggprint8b(&r, 16, c, "B - Bigfoot");
+	ggprint8b(&r, 16, c, "1 - Round1");
+	ggprint8b(&r, 16, c, "2 - Round2");
+	ggprint8b(&r, 16, c, "3 - Round3");	
+    ggprint8b(&r, 16, c, "B - Bigfoot");
 	ggprint8b(&r, 16, c, "F - Forest");
 	ggprint8b(&r, 16, c, "S - Silhouette");
 	ggprint8b(&r, 16, c, "T - Trees");
