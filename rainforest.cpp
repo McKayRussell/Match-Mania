@@ -24,8 +24,7 @@
 #include "log.h"
 //#include "ppm.h"
 #include "fonts.h"
-#include <fstream> //library to render round cards
-using namespace std;
+
 //defined types
 typedef double Flt;
 typedef double Vec[3];
@@ -122,25 +121,31 @@ public:
 			unlink(ppmname);
 	}
 };
-Image img[5] = {
+Image img[7] = {
 "./images/bigfoot.png",
-"./images/forest.png",
-"./images/forestTrans.png",
+"./images/pic.png",
+"./images/front2.PNG",
 "./images/umbrella.png",
-"./images/credits.png" };
+"./images/credits.png",
+"./images/back2.png",
+"./images/witch.png",
+};
 
 class Global {
 public:
 	int done;
 	int xres, yres;
 	GLuint bigfootTexture;
+    GLuint witchTexture;
 	GLuint silhouetteTexture;
 	GLuint forestTexture;
 	GLuint forestTransTexture;
 	GLuint umbrellaTexture;
 	GLuint creditsTexture;
-	int showBigfoot;
-	int forest;
+    GLuint cardTexture; 
+    int showBigfoot;
+	int witch;
+    int forest;
 	int silhouette;
 	int trees;
 	int showRain;
@@ -151,9 +156,9 @@ public:
     Global() {
 		logOpen();
 		done=0;
-		xres=1000;
+		xres=800;
 		yres=600;
-		showBigfoot=0;
+        showBigfoot=0;
 		forest=1;
 		silhouette=1;
 		trees=1;
@@ -161,12 +166,19 @@ public:
 		showUmbrella=0;
 		deflection=0;
         show_credits=0;
-        round1 = round2 = round3 = 0;
-	}
+        round1=round2=round3=0;
+	    witch=0;
+    }
 	~Global() {
 		logClose();
 	}
 } g;
+//
+class Witch {
+public:
+	Vec pos;
+	Vec vel;
+} witch;
 
 class Bigfoot {
 public:
@@ -211,32 +223,22 @@ class X11_wrapper {
 private:
 	Display *dpy;
 	Window win;
-    GC gc; //for rouunds
 public:
 	X11_wrapper() {
 		GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 		//GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, None };
 		XSetWindowAttributes swa;
-		setupScreenRes(1000, 600);
-		//dpy = XOpenDisplay(NULL);
-		//
-        //
-        //constructor
-	    //
-        if (!(dpy = XOpenDisplay(NULL))) {
-		    fprintf(stderr, "ERROR: could not open display\n");
-		    fflush(stderr);
-		    exit(EXIT_FAILURE);
-	    }
-	    int scr = DefaultScreen(dpy);
-        // window size & background color
-        win = XCreateSimpleWindow(dpy, RootWindow(dpy, scr),
-							1, 1, g.xres, g.yres, 0, 0x00ffffff, 0x00400040); 
-        gc = XCreateGC(dpy, win, 0, NULL);
-	    Window root = DefaultRootWindow(dpy);
-        XVisualInfo *vi = glXChooseVisual(dpy, 0, att);
-		//
-        if (vi == NULL) {
+		//setupScreenRes(640, 480);
+	    setupScreenRes(900, 600);
+		
+        dpy = XOpenDisplay(NULL);
+		if (dpy == NULL) {
+			printf("\n\tcannot connect to X server\n\n");
+			exit(EXIT_FAILURE);
+		}
+		Window root = DefaultRootWindow(dpy);
+		XVisualInfo *vi = glXChooseVisual(dpy, 0, att);
+		if (vi == NULL) {
 			printf("\n\tno appropriate visual found\n\n");
 			exit(EXIT_FAILURE);
 		} 
@@ -246,17 +248,15 @@ public:
 							StructureNotifyMask | SubstructureNotifyMask;
 		win = XCreateWindow(dpy, root, 0, 0, g.xres, g.yres, 0,
 								vi->depth, InputOutput, vi->visual,
-								CWColormap | CWEventMask, &swa); 
+								CWColormap | CWEventMask, &swa);
 		GLXContext glc = glXCreateContext(dpy, vi, NULL, GL_TRUE);
 		glXMakeCurrent(dpy, win, glc);
-		setTitle();     
+		setTitle();
 	}
-
 	~X11_wrapper() {
 		XDestroyWindow(dpy, win);
 		XCloseDisplay(dpy);
 	}
-
 	void setTitle() {
 		//Set the window title bar.
 		XMapWindow(dpy, win);
@@ -297,16 +297,7 @@ public:
 	}
 	void swapBuffers() {
 		glXSwapBuffers(dpy, win);
-    }
-
-    void drawPoint(int x, int y) {
-        XDrawPoint(dpy, win, gc, x, y);
-    }
-
-    void set_color_3i(int r, int g, int b) {
-        unsigned long cref = (r<<16) + (g<<8) + b;
-        XSetForeground(dpy, gc, cref);
-    }
+	}
 } x11;
 
 //function prototypes
@@ -316,6 +307,7 @@ int checkKeys(XEvent *e);
 void init();
 void physics(void);
 void render(void);
+
 
 int main()
 {
@@ -357,11 +349,9 @@ int main()
 			//7. Reduce the countdown by our physics-rate
 			physicsCountdown -= physicsRate;
 		}
-		//Always render every frame!
-        render();
-		if (!g.round1 && !g.round2 && !g.round3) { 
-            x11.swapBuffers();
-        }
+		//Always render every frame.
+		render();
+		x11.swapBuffers();
 	}
 	//cleanupXWindows();
 	cleanup_fonts();
@@ -400,7 +390,10 @@ unsigned char *buildAlphaData(Image *img)
 		//*(ptr+3) = d;
 		//-----------------------------------------------
 		//this code optimizes the commented code above.
-		*(ptr+3) = (a|b|c);
+		//
+        //todo: need credits for student work.
+        //
+        *(ptr+3) = (a|b|c);
 		//-----------------------------------------------
 		ptr += 4;
 		data += 3;
@@ -436,13 +429,39 @@ void initOpengl(void)
 	//forestImage      = ppm6GetImage("./images/forest.ppm");
 	//forestTransImage = ppm6GetImage("./images/forestTrans.ppm");
 	//umbrellaImage    = ppm6GetImage("./images/umbrella.ppm");
-	//create opengl texture elements
-	glGenTextures(1, &g.bigfootTexture);
-	glGenTextures(1, &g.silhouetteTexture);
+	//create opengl texture elements    
+
+    glGenTextures(1, &g.bigfootTexture);
+	glGenTextures(1, &g.witchTexture); 
+    glGenTextures(1, &g.silhouetteTexture);
 	glGenTextures(1, &g.forestTexture);
 	glGenTextures(1, &g.umbrellaTexture);
-	glGenTextures(1, &g.creditsTexture);
+    glGenTextures(1, &g.creditsTexture);
+    glGenTextures(1, &g.cardTexture); 
+    
 	//-------------------------------------------------------------------------
+	//back of card
+	//
+	
+    int w2 = img[5].width;
+	int h2 = img[5].height;
+	//
+	glBindTexture(GL_TEXTURE_2D, g.cardTexture);
+	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, w2, h2, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, img[5].data); 
+    glBindTexture(GL_TEXTURE_2D, 0);
+    /*
+	glBindTexture(GL_TEXTURE_2D, g.cardTexture);
+	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, img[4].width, img[4].height,
+									0, GL_RGB, GL_UNSIGNED_BYTE, img[4].data);
+	    */
+    //-------------------------------------------------------------------------
 	//bigfoot
 	//
 	int w = img[0].width;
@@ -454,11 +473,13 @@ void initOpengl(void)
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 	glTexImage2D(GL_TEXTURE_2D, 0, 3, w, h, 0,
 		GL_RGB, GL_UNSIGNED_BYTE, img[0].data);
-	//-------------------------------------------------------------------------
-	//
+	
+    //-------------------------------------------------------------------------	
+    //
 	//silhouette
 	//this is similar to a sprite graphic
 	//
+    
 	glBindTexture(GL_TEXTURE_2D, g.silhouetteTexture);
 	//
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
@@ -466,15 +487,44 @@ void initOpengl(void)
 	//
 	//must build a new set of data...
 	unsigned char *silhouetteData = buildAlphaData(&img[0]);	
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
 								GL_RGBA, GL_UNSIGNED_BYTE, silhouetteData);
-	free(silhouetteData);
-	//glTexImage2D(GL_TEXTURE_2D, 0, 3, w, h, 0,
-	//	GL_RGB, GL_UNSIGNED_BYTE, bigfootImage->data);
-	//-------------------------------------------------------------------------
+
+    free(silhouetteData); 
+    //glTexImage2D(GL_TEXTURE_2D, 0, 3, w, h, 0,
+	//	GL_RGB, GL_UNSIGNED_BYTE, bigfootImage->data);    
+    //-------------------------------------------------------------------------
+	//witch
+    int w3 = img[6].width;
+	int h3 = img[6].height;
+    glBindTexture(GL_TEXTURE_2D, g.witchTexture);
 	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, w3, h3, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, img[6].data);
+    //-------------------------------------------------------------------------
+    //
+	//witch silhouette
+	//this is similar to a sprite graphic
+	//
+    
+	glBindTexture(GL_TEXTURE_2D, g.silhouetteTexture);
+	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	//
+	//must build a new set of data...
+    unsigned char *silData2 = buildAlphaData(&img[6]);	
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w3, h3, 0,
+								GL_RGBA, GL_UNSIGNED_BYTE, silData2);
+    free(silData2);     
+   //-------------------------------------------------------------------------
+	
+    //
 	//umbrella
 	//
+    
 	glBindTexture(GL_TEXTURE_2D, g.umbrellaTexture);
 	//
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
@@ -484,11 +534,11 @@ void initOpengl(void)
 	silhouetteData = buildAlphaData(&img[3]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
 								GL_RGBA, GL_UNSIGNED_BYTE, silhouetteData);
-	free(silhouetteData);
+	free(silhouetteData); 
 	//glTexImage2D(GL_TEXTURE_2D, 0, 3, w, h, 0,
-	//	GL_RGB, GL_UNSIGNED_BYTE, bigfootImage->data);
+	//	GL_RGB, GL_UNSIGNED_BYTE, bigfootImage->data); 
 	//-------------------------------------------------------------------------
-	//
+    //
 	//credits
 	glBindTexture(GL_TEXTURE_2D, g.creditsTexture);
 	//
@@ -496,7 +546,7 @@ void initOpengl(void)
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 	glTexImage2D(GL_TEXTURE_2D, 0, 3, img[4].width, img[4].height,
 									0, GL_RGB, GL_UNSIGNED_BYTE, img[4].data);
-	//-------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
 	//
 	//forest
 	glBindTexture(GL_TEXTURE_2D, g.forestTexture);
@@ -541,6 +591,9 @@ void init() {
 	umbrella.shape = UMBRELLA_FLAT;
 	MakeVector(-150.0,180.0,0.0, bigfoot.pos);
 	MakeVector(6.0,0.0,0.0, bigfoot.vel);
+    MakeVector(-150.0,180.0,0.0, witch.pos);
+	MakeVector(6.0,0.0,0.0, witch.vel);
+
 }
 
 void checkMouse(XEvent *e)
@@ -587,7 +640,7 @@ int checkKeys(XEvent *e)
 	switch (key) {
         case XK_1:
             g.round2 = g.round3 = 0;
-            g.round1 ^= 1; 
+            g.round1 ^= 1;
             break;
         case XK_2:
             g.round1 = g.round3 = 0;
@@ -596,6 +649,9 @@ int checkKeys(XEvent *e)
         case XK_3:
             g.round1 = g.round2 = 0;
             g.round3 ^= 1;
+            break; 
+        case XK_c:
+            g.show_credits ^= 1;
             break;
 		case XK_b:
 			g.showBigfoot ^= 1;
@@ -603,10 +659,13 @@ int checkKeys(XEvent *e)
 				bigfoot.pos[0] = -250.0;
 			}
 			break;
-        case XK_c:
-            g.show_credits ^= 1;
-            break;
-		case XK_d:
+	    case XK_6:
+			g.witch ^= 1;
+			if (g.witch) {
+				witch.pos[0] = -250.0;
+			}
+			break;
+        case XK_d:
 			g.deflection ^= 1;
 			break;
 		case XK_f:
@@ -728,6 +787,31 @@ void deleteRain(Raindrop *node)
 	}
 	free(node);
 	node = NULL;
+}
+
+void moveWitch()
+{
+	//move bigfoot...
+	int addgrav = 1;
+	//Update position
+	witch.pos[0] += witch.vel[0];
+	witch.pos[1] += witch.vel[1];
+	//Check for collision with window edges
+	if ((witch.pos[0] < -140.0 && witch.vel[0] < 0.0) ||
+		(witch.pos[0] >= (float)g.xres+140.0 &&
+		witch.vel[0] > 0.0))
+	{
+		witch.vel[0] = -witch.vel[0];
+		addgrav = 0;
+	}
+	if ((witch.pos[1] < 150.0 && witch.vel[1] < 0.0) ||
+		(witch.pos[1] >= (float)g.yres && witch.vel[1] > 0.0)) {
+	    witch.vel[1] = -witch.vel[1];
+		addgrav = 0;
+	}
+	//Gravity?
+	if (addgrav)
+		witch.vel[1] -= 0.75;
 }
 
 void moveBigfoot()
@@ -902,7 +986,9 @@ void physics()
 {
 	if (g.showBigfoot)
 		moveBigfoot();
-	if (g.showRain)
+	if (g.witch)
+		moveWitch();	
+    if (g.showRain)
 		checkRaindrops();
 }
 
@@ -955,61 +1041,46 @@ void drawRaindrops()
 	glLineWidth(1);
 }
 
-void drawCardsBack(int row, int col) {
-    static int width, height;
-    // image is 200 by 200 but each pixel is 3
-    static unsigned char *data = new unsigned char [200 * 200 * 3];
- 
-    ifstream fin("./images/back2.ppm");
-    char p6[8];
-    fin >> p6;
-    fin >> width >> height;
-    int maxcolor;
-    fin >> maxcolor;
-    fin.read((char *)data, 1); 
-    fin.read((char *)data, 200*200*3);
-    fin.close();
+//Dat Pham
+void drawCardBack(int row, int col, float w)
+{
+        // STARTING PTS
+        // (top/left alignment)
+        // float x = 100.0;
+        // float y = g.yres-100.0; 
+        
+        //(top/middle alignment)
+        float x = g.xres/2;
+        float y = g.yres-100.0;    
 
-    unsigned char *p = data;
-    for (int i=0; i<height; i++) {
-        for (int j=0; j<width; j++) {
-            //set the color
-            x11.set_color_3i( *(p+0), *(p+1), *(p+2));
-            p = p + 3;
-            //draw the pixel
-            for (int n = 0; n < row; n++) {   
-                for (int m = 0; m < col; m++) {  
-                    x11.drawPoint(250+j+(m*115),i+(n*160)); //position
-                }
+        for (int i=0; i<col; i++) {
+            for (int j=0; j<row; j++) {
+                glPushMatrix();
+                glTranslatef(x+(i*(w*2+10)), y-(j*(w*2+40)), 0);
+                glBindTexture(GL_TEXTURE_2D, g.cardTexture);
+		        glBegin(GL_QUADS);
+    	            glTexCoord2f(0.0f, 1.0f); glVertex2i(-w,-w);
+			        glTexCoord2f(0.0f, 0.0f); glVertex2i(-w, w+30);
+			        glTexCoord2f(1.0f, 0.0f); glVertex2i( w, w+30);
+			        glTexCoord2f(1.0f, 1.0f); glVertex2i( w,-w);
+                glEnd();
+                glPopMatrix();
             }
-        }
-    }
+        }      
 }
 
 void render()
 {
-    Rect r;
+	Rect r;
 
 	//Clear the screen
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
-    //
+	//
 	//draw a quad with texture
 	float wid = 120.0f;
 	glColor3f(1.0, 1.0, 1.0);
-	
-    if (g.round1) {
-        drawCardsBack(3,4);
-    }
-
-    if (g.round2) {
-        drawCardsBack(4,4);
-    }
-
-    if (g.round3) {
-        drawCardsBack(3,5);
-    } 
-
+   
     if (g.forest) {
 		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
 		glBegin(GL_QUADS);
@@ -1017,9 +1088,10 @@ void render()
 			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
 			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
 			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
-		glEnd();
+		glEnd(); 
 	}
-	if (g.showBigfoot) {
+
+    if (g.showBigfoot) {
 		glPushMatrix();
 		glTranslatef(bigfoot.pos[0], bigfoot.pos[1], bigfoot.pos[2]);
 		if (!g.silhouette) {
@@ -1048,15 +1120,68 @@ void render()
 		if (g.trees && g.silhouette) {
 			glBindTexture(GL_TEXTURE_2D, g.forestTransTexture);
 			glBegin(GL_QUADS);
-				glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
-				glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
+				glTexCoord2f(0.0f, 1.0f); glVertex2i(0.5, 0);
+				glTexCoord2f(0.0f, 0.0f); glVertex2i(0.5, g.yres);
 				glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
 				glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
 			glEnd();
 		}
 		glDisable(GL_ALPHA_TEST);
 	}
+
+    if (g.witch) {
+		glPushMatrix();
+		glTranslatef(witch.pos[0], witch.pos[1], witch.pos[2]);
+		
+        if (!g.silhouette) {
+			glBindTexture(GL_TEXTURE_2D, g.witchTexture);
+		} else {
+			glBindTexture(GL_TEXTURE_2D, g.silhouetteTexture);
+			glEnable(GL_ALPHA_TEST);
+			glAlphaFunc(GL_GREATER, 0.0f);
+			glColor4ub(255,255,255,255);
+		} 
+		glBegin(GL_QUADS);
+			if (witch.vel[0] < 0.0) {
+				glTexCoord2f(0.0f, 1.0f); glVertex2i(-wid,-wid);
+				glTexCoord2f(0.0f, 0.0f); glVertex2i(-wid, wid);
+				glTexCoord2f(1.0f, 0.0f); glVertex2i( wid, wid);
+				glTexCoord2f(1.0f, 1.0f); glVertex2i( wid,-wid);
+			} else {
+				glTexCoord2f(1.0f, 1.0f); glVertex2i(-wid,-wid);
+				glTexCoord2f(1.0f, 0.0f); glVertex2i(-wid, wid);
+				glTexCoord2f(0.0f, 0.0f); glVertex2i( wid, wid);
+				glTexCoord2f(0.0f, 1.0f); glVertex2i( wid,-wid);
+			}
+		glEnd();
+		glPopMatrix();
+		//
+        
+		if (g.trees && g.silhouette) {
+			glBindTexture(GL_TEXTURE_2D, g.forestTransTexture);
+			glBegin(GL_QUADS);
+				glTexCoord2f(0.0f, 1.0f); glVertex2i(0.5, 0);
+				glTexCoord2f(0.0f, 0.0f); glVertex2i(0.5, g.yres);
+				glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
+				glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
+			glEnd();
+		} 
+		glDisable(GL_ALPHA_TEST);
+	}
+
+
+    if (g.round1) {
+        drawCardBack(3,4,45.0);	
+	}
     
+    if (g.round2) {
+        drawCardBack(4,4,45.0);	
+	}
+    
+    if (g.round3) {
+        drawCardBack(5,5,35.0);	
+	}
+
     if (g.show_credits){
         glBindTexture(GL_TEXTURE_2D, g.creditsTexture);
 		glBegin(GL_QUADS);
@@ -1065,7 +1190,7 @@ void render()
 			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
 			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
 		glEnd();
-		
+
 		show_mckays_credits(g.xres / 2, g.yres / 2);
         show_dat_credits(g.xres / 2, g.yres / 2);
         show_steven_credits(g.xres / 2, g.yres / 2);
@@ -1092,22 +1217,23 @@ void render()
 		drawUmbrella();
 	glBindTexture(GL_TEXTURE_2D, 0);
 	//
-	//
 	unsigned int c = 0x00ffff44;
 	r.bot = g.yres - 20;
 	r.left = 10;
 	r.center = 0;
-	ggprint8b(&r, 16, c, "1 - Round1");
-	ggprint8b(&r, 16, c, "2 - Round2");
-	ggprint8b(&r, 16, c, "3 - Round3");	
-    ggprint8b(&r, 16, c, "B - Bigfoot");
-	ggprint8b(&r, 16, c, "F - Forest");
-	ggprint8b(&r, 16, c, "S - Silhouette");
-	ggprint8b(&r, 16, c, "T - Trees");
-	ggprint8b(&r, 16, c, "U - Umbrella");
-	ggprint8b(&r, 16, c, "R - Rain");
-	ggprint8b(&r, 16, c, "D - Deflection");
-	ggprint8b(&r, 32, c, "N - Sounds");
-    ggprint8b(&r, 16, 0x00ff0000, "Press c for credits");
+    int h = 12;
+	ggprint8b(&r, h, c, "1 - Round 1");
+	ggprint8b(&r, h, c, "2 - Round 2");    
+    ggprint8b(&r, h, c, "3 - Round 3");
+    ggprint8b(&r, h, c, "6 - witch");
+    ggprint8b(&r, h, c, "B - Bigfoot");
+	ggprint8b(&r, h, c, "F - Forest");
+	ggprint8b(&r, h, c, "S - Silhouette");
+	ggprint8b(&r, h, c, "T - Trees");
+	ggprint8b(&r, h, c, "U - Umbrella");
+	ggprint8b(&r, h, c, "R - Rain");
+	ggprint8b(&r, h, c, "D - Deflection");
+	ggprint8b(&r, h, c, "N - Sounds");
+    ggprint8b(&r, h, 0x00ff0000, "Press c for credits");
 }
 
