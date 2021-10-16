@@ -1042,6 +1042,7 @@ void drawRaindrops()
 }
 
 //Dat Pham
+//inputs: row, column, size of card (width)
 void drawCardBack(int row, int col, float w)
 {
         // STARTING PTS
