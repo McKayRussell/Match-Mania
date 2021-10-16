@@ -222,7 +222,8 @@ public:
 		//
         //
         //constructor
-	    if (!(dpy = XOpenDisplay(NULL))) {
+	    //
+        if (!(dpy = XOpenDisplay(NULL))) {
 		    fprintf(stderr, "ERROR: could not open display\n");
 		    fflush(stderr);
 		    exit(EXIT_FAILURE);
@@ -231,25 +232,11 @@ public:
         // window size & background color
         win = XCreateSimpleWindow(dpy, RootWindow(dpy, scr),
 							1, 1, g.xres, g.yres, 0, 0x00ffffff, 0x00400040); 
-	    XStoreName(dpy, win, "CMPS-3480   Press Esc to exit.");
-	    gc = XCreateGC(dpy, win, 0, NULL);
-	    XMapWindow(dpy, win);
-	    XSelectInput(dpy, win, ExposureMask | StructureNotifyMask |
-							    PointerMotionMask | ButtonPressMask |
-							    ButtonReleaseMask | KeyPressMask | 
-                                KeyReleaseMask);
-
-        //
-        //
-        //
-        /*
-        if (dpy == NULL) {
-			printf("\n\tcannot connect to X server\n\n");
-			exit(EXIT_FAILURE);
-		} */
-		Window root = DefaultRootWindow(dpy);
-		XVisualInfo *vi = glXChooseVisual(dpy, 0, att);
-		if (vi == NULL) {
+        gc = XCreateGC(dpy, win, 0, NULL);
+	    Window root = DefaultRootWindow(dpy);
+        XVisualInfo *vi = glXChooseVisual(dpy, 0, att);
+		//
+        if (vi == NULL) {
 			printf("\n\tno appropriate visual found\n\n");
 			exit(EXIT_FAILURE);
 		} 
@@ -259,7 +246,7 @@ public:
 							StructureNotifyMask | SubstructureNotifyMask;
 		win = XCreateWindow(dpy, root, 0, 0, g.xres, g.yres, 0,
 								vi->depth, InputOutput, vi->visual,
-								CWColormap | CWEventMask, &swa);
+								CWColormap | CWEventMask, &swa); 
 		GLXContext glc = glXCreateContext(dpy, vi, NULL, GL_TRUE);
 		glXMakeCurrent(dpy, win, glc);
 		setTitle();     
@@ -599,18 +586,15 @@ int checkKeys(XEvent *e)
 	}
 	switch (key) {
         case XK_1:
-            g.round2 = 0;
-            g.round3 = 0; 
+            g.round2 = g.round3 = 0;
             g.round1 ^= 1; 
             break;
         case XK_2:
-            g.round1 = 0;
-            g.round3 = 0;
+            g.round1 = g.round3 = 0;
             g.round2 ^= 1;
             break;
         case XK_3:
-            g.round1 = 0;
-            g.round2 = 0; 
+            g.round1 = g.round2 = 0;
             g.round3 ^= 1;
             break;
 		case XK_b:
@@ -1000,7 +984,6 @@ void drawCardsBack(int row, int col) {
             }
         }
     }
-
 }
 
 void render()
