@@ -1059,11 +1059,11 @@ void drawCardBack(int row, int col, float w)
                 glPushMatrix();
                 glTranslatef(x+(i*(w*2+10)), y-(j*(w*2+40)), 0);
                 glBindTexture(GL_TEXTURE_2D, g.cardTexture);
-		        glBegin(GL_QUADS);
-    	            glTexCoord2f(0.0f, 1.0f); glVertex2i(-w,-w);
-			        glTexCoord2f(0.0f, 0.0f); glVertex2i(-w, w+30);
-			        glTexCoord2f(1.0f, 0.0f); glVertex2i( w, w+30);
-			        glTexCoord2f(1.0f, 1.0f); glVertex2i( w,-w);
+		glBegin(GL_QUADS);
+    	       		glTexCoord2f(0.0f, 1.0f); glVertex2i(-w,-w);
+			glTexCoord2f(0.0f, 0.0f); glVertex2i(-w, w+30);
+			glTexCoord2f(1.0f, 0.0f); glVertex2i( w, w+30);
+			glTexCoord2f(1.0f, 1.0f); glVertex2i( w,-w);
                 glEnd();
                 glPopMatrix();
             }
