@@ -164,8 +164,8 @@ public:
     Global() {
 		logOpen();
 		done=0;
-		xres=800;
-		yres=600;
+		xres=1100;
+		yres=800;
         showBigfoot=0;
 		forest=1;
 		silhouette=1;
@@ -1157,215 +1157,62 @@ void drawCardBack(int row, int col, float w)
 	}
 }
 
-
-//McKay Russell
-//inputs: row of clicked card, col of clicked card, width
-// void drawCardFront(int row, int col, float w)
-// {
-// 	// STARTING PTS
-// 	// (top/left alignment)
-// 	// float x = 100.0;
-// 	// float y = g.yres-100.0; 
-	
-// 	//(top/middle alignment)
-// 	float x = g.xres/2;
-// 	float y = g.yres-100.0;
-
-// 	glPushMatrix();
-// 	glTranslatef(x+(row*(w*2+10)), y-(col*(w*2+40)), 0);
-// 	glBindTexture(GL_TEXTURE_2D, g.cardFront);
-// 	glBegin(GL_QUADS);
-// 		glTexCoord2f(0.0f, 1.0f); glVertex2i(-w,-w);
-// 		glTexCoord2f(0.0f, 0.0f); glVertex2i(-w, w+30);
-// 		glTexCoord2f(1.0f, 0.0f); glVertex2i( w, w+30);
-// 		glTexCoord2f(1.0f, 1.0f); glVertex2i( w,-w);
-// 	glEnd();
-// 	glPopMatrix();
-// }
-
 //McKay Russell
 //inputs: mouse x coordinate, mouse y coordinate
 void flipCard(int mx, int my)
 {
-	// int thisCard = 0;
-	// int cardRow = 0;
-	// int cardCol = 0;
 	float x = g.xres/2 - 40;
 	float y = 25;
-	
-	// float x = g.xres-500.0;
-	// float y = g.yres-500.0;
+	int rows = 0;
+	int cols = 0;
 
 	if (g.round1) {
-		// y = 0;
-		// for (int i = 0; i < 4; i++) {
-		// 	x = 0;
-		// 	for (int j = 0; j < 3; j++) {
-		// 		if (mx > x+(100 * j) && mx < x+(100 * j)+85 &&
-		// 			my > 25 && my < 145 ) {
-		// 			g.cardRow = 0;
-		// 			g.cardCol = 1;
-		// 			g.flipped ^= 1;
-		// 		}
-		// 	}
-		// }
-		if (mx > x && mx < x+85 && my > y && my < y + 120) {
-			g.cardRow = 0;
-			g.cardCol = 0;
-			g.flipped = 1;
+		rows = 3;
+		cols = 4;
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < cols; j++) {
+				if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
+						&& my < y+(130 * i)+120)
+				{
+					g.cardRow = i;
+					g.cardCol = j;
+					g.flipped ^= 1;
+				}
+			}
 		}
-		else if (mx > x+100 && mx < x+185 && my > y && my < y + 120) {
-			g.cardRow = 0;
-			g.cardCol = 1;
-			g.flipped ^= 1;
-		}
-		else if (mx > x+200 && mx < x+285 && my > y && my < y + 120) {
-			g.cardRow = 0;
-			g.cardCol = 2;
-			g.flipped ^= 1;
-		}
-		else if (mx > x+300 && mx < x+385 && my > y && my < y + 120) {
-			g.cardRow = 0;
-			g.cardCol = 3;
-			g.flipped ^= 1;
-		}
-		else if (mx > x && mx < x+85 && my > y+130 && my < y + 255) {
-			g.cardRow = 1;
-			g.cardCol = 0;
-			g.flipped ^= 1;
-		}
-		else if (mx > x+100 && mx < x+185 && my > y + 130 && my < y + 225) {
-			g.cardRow = 1;
-			g.cardCol = 1;
-			g.flipped ^= 1;
-		}
-		else if (mx > x+200 && mx < x+285 && my > y + 130 && my < y + 225) {
-			g.cardRow = 1;
-			g.cardCol = 2;
-			g.flipped ^= 1;
-		}
-		else if (mx > x+300 && mx < x+385 && my > y + 130 && my < y + 225) {
-			g.cardRow = 1;
-			g.cardCol = 3;
-			g.flipped ^= 1;
-		}
-		else if (mx > x && mx < x+85 && my > y+260 && my < y + 510) {
-			g.cardRow = 2;
-			g.cardCol = 0;
-			g.flipped ^= 1;
-		}
-		else if (mx > x+100 && mx < x+185 && my > y + 260 && my < y + 510) {
-			g.cardRow = 2;
-			g.cardCol = 1;
-			g.flipped ^= 1;
-		}
-		else if (mx > x+200 && mx < x+285 && my > y + 260 && my < y + 510) {
-			g.cardRow = 2;
-			g.cardCol = 2;
-			g.flipped ^= 1;
-		}
-		else if (mx > x+300 && mx < x+385 && my > y + 260 && my < y + 510) {
-			g.cardRow = 2;
-			g.cardCol = 3;
-			g.flipped ^= 1;
-		}
-
-		// if (mx > x && mx < x+85 && my > y && my < y + 120) {
-		// 	g.cardRow = 0;
-		// 	g.cardCol = 0;
-		// 	g.flippedTwo ^= 1;
-		// }
-		// else if (mx > x+100 && mx < x+185 && my > y && my < y + 120) {
-		// 	g.cardRow = 0;
-		// 	g.cardCol = 1;
-		// 	g.flippedTwo = 1;
-		// }
-		// else if (mx > x+200 && mx < x+285 && my > y && my < y + 120) {
-		// 	g.cardRow = 0;
-		// 	g.cardCol = 2;
-		// 	g.flippedTwo ^= 1;
-		// }
-		// else if (mx > x+300 && mx < x+385 && my > y && my < y + 120) {
-		// 	g.cardRow = 0;
-		// 	g.cardCol = 3;
-		// 	g.flippedTwo ^= 1;
-		// }
-		// else if (mx > x && mx < x+85 && my > y+130 && my < y + 255) {
-		// 	g.cardRow = 1;
-		// 	g.cardCol = 0;
-		// 	g.flippedTwo ^= 1;
-		// }
-		// else if (mx > x+100 && mx < x+185 && my > y + 130 && my < y + 225) {
-		// 	g.cardRow = 1;
-		// 	g.cardCol = 1;
-		// 	g.flippedTwo ^= 1;
-		// }
-		// else if (mx > x+200 && mx < x+285 && my > y + 130 && my < y + 225) {
-		// 	g.cardRow = 1;
-		// 	g.cardCol = 2;
-		// 	g.flippedTwo ^= 1;
-		// }
-		// else if (mx > x+300 && mx < x+385 && my > y + 130 && my < y + 225) {
-		// 	g.cardRow = 1;
-		// 	g.cardCol = 3;
-		// 	g.flippedTwo ^= 1;
-		// }
-		// else if (mx > x && mx < x+85 && my > y+260 && my < y + 510) {
-		// 	g.cardRow = 2;
-		// 	g.cardCol = 0;
-		// 	g.flippedTwo ^= 1;
-		// }
-		// else if (mx > x+100 && mx < x+185 && my > y + 260 && my < y + 510) {
-		// 	g.cardRow = 2;
-		// 	g.cardCol = 1;
-		// 	g.flippedTwo ^= 1;
-		// }
-		// else if (mx > x+200 && mx < x+285 && my > y + 260 && my < y + 510) {
-		// 	g.cardRow = 2;
-		// 	g.cardCol = 2;
-		// 	g.flippedTwo ^= 1;
-		// }
-		// else if (mx > x+300 && mx < x+385 && my > y + 260 && my < y + 510) {
-		// 	g.cardRow = 2;
-		// 	g.cardCol = 3;
-		// 	g.flippedTwo ^= 1;
-		// }
-		// int row = 3;
-		// int col = 4;
-		// float w = 45.0;
-		// for (int i = 0; i < col; i++) {
-        //     for (int j = 0; j < row; j++) {
-				
-		// // 		x += i*(w*2+10);
-		// // 		y -= j*(w*2+40);
-		// // 		printf("x: %f, y: %f  ", x+(i*(w*2+10)), y-(j*(w*2+40)));
-		// 		// if (mx >= x+(i*(w*2+10)) && my <= y-(j*(w*2+40)) && mx <= x+(i*(w*2+10))+100 && my >= y-(j*(w*2+40)) - 100) {
-		// 		// 	g.cardCol = i;
-		// 		// 	g.cardRow = j;
-		// 		// 	// drawCardFront(cardRow, cardCol, w);
-		// 		// 	// printf("mx: %d, my: %d", mx, my);
-		// 		// 	// g.cardRow = 0;
-		// 		// 	// g.cardCol = 0;
-		// 		// 	g.flipped ^= 1;
-		// 		// }
-        //         // glTranslatef(x+(i*(w*2+10)), y-(j*(w*2+40)), 0);
-        //         // glBindTexture(GL_TEXTURE_2D, g.cardTexture);
-		//         // glBegin(GL_QUADS);
-    	//         //     glTexCoord2f(0.0f, 1.0f); glVertex2i(-w,-w);
-		// 	    //     glTexCoord2f(0.0f, 0.0f); glVertex2i(-w, w+30);
-		// 	    //     glTexCoord2f(1.0f, 0.0f); glVertex2i( w, w+30);
-		// 	    //     glTexCoord2f(1.0f, 1.0f); glVertex2i( w,-w);
-        //     }
-        // }
 	}
 
-	// if (g.round2) {
+	if (g.round2) {
+		rows = 4;
+		cols = 4;
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < cols; j++) {
+				if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
+						&& my < y+(130 * i)+120)
+				{
+					g.cardRow = i;
+					g.cardCol = j;
+					g.flipped ^= 1;
+				}
+			}
+		}
+	}
 
-	// }
-
-	// if (g.round3) {
-
-	// }
+	if (g.round3) {
+		rows = 5;
+		cols = 5;
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < cols; j++) {
+				if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
+						&& my < y+(130 * i)+120)
+				{
+					g.cardRow = i;
+					g.cardCol = j;
+					g.flipped ^= 1;
+				}
+			}
+		}
+	}
 }
 
 void render()
@@ -1478,7 +1325,7 @@ void render()
 	}
     
     if (g.round3) {
-        drawCardBack(5,5,35.0);	
+        drawCardBack(5,5,45.0);	
 	}
 
 	if (g.flipped == 1) {
