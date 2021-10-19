@@ -123,7 +123,7 @@ public:
 			unlink(ppmname);
 	}
 };
-Image img[8] = {
+Image img[9] = {
 "./images/bigfoot.png",
 "./images/pic.png",
 "./images/front2.PNG",
@@ -132,6 +132,7 @@ Image img[8] = {
 "./images/back2.png",
 "./images/witch.png",
 "./images/queen.jpg",
+"./images/Menu.jpg",
 };
 
 class Global {
@@ -147,6 +148,7 @@ public:
 	GLuint creditsTexture;
     GLuint cardTexture;
 	GLuint cardFront; 
+	GLuint StartTexture;
     int showBigfoot;
 	int witch;
     int forest;
@@ -158,6 +160,7 @@ public:
 	int show_credits;
     int round1, round2, round3;
 	int flipped;
+	int Startscreen;
 	// int flippedTwo;
 	int cardRow;
 	int cardCol;
@@ -167,9 +170,9 @@ public:
 		xres=1100;
 		yres=800;
         showBigfoot=0;
-		forest=1;
+		forest=0;
 		silhouette=1;
-		trees=1;
+		trees=0;
 		showRain=0;
 		showUmbrella=0;
 		deflection=0;
@@ -180,6 +183,7 @@ public:
 		// flippedTwo = 0;
 		cardRow = 0;
 		cardCol = 0;
+		Startscreen = 1;
     }
 	~Global() {
 		logClose();
@@ -496,7 +500,22 @@ void initOpengl(void)
     glGenTextures(1, &g.creditsTexture);
     glGenTextures(1, &g.cardTexture); 
 	glGenTextures(1, &g.cardFront);
+	glGenTextures(1, &g.StartTexture);
     
+	//-------------------------------------------------------------------------
+	//Startscreen
+	//
+	
+    int w8 = img[8].width;
+	int h8 = img[8].height;
+	//
+	glBindTexture(GL_TEXTURE_2D, g.StartTexture);
+	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, w8, h8, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, img[8].data); 
+    glBindTexture(GL_TEXTURE_2D, 0);
 	//-------------------------------------------------------------------------
 	//back of card
 	//
@@ -726,15 +745,18 @@ int checkKeys(XEvent *e)
 	}
 	switch (key) {
         case XK_1:
+			g.Startscreen ^= 1;
             g.round2 = g.round3 = 0;
             g.round1 ^= 1;
             break;
         case XK_2:
             g.round1 = g.round3 = 0;
+			g.Startscreen ^= 1;
             g.round2 ^= 1;
             break;
         case XK_3:
             g.round1 = g.round2 = 0;
+			g.Startscreen ^= 1;
             g.round3 ^= 1;
             break; 
         case XK_c:
@@ -1227,15 +1249,15 @@ void render()
 	float wid = 120.0f;
 	glColor3f(1.0, 1.0, 1.0);
    
-    if (g.forest) {
-		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
-			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
-			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
-			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
-		glEnd(); 
-	}
+    // if (g.forest) {
+	// 	glBindTexture(GL_TEXTURE_2D, g.forestTexture);
+	// 	glBegin(GL_QUADS);
+	// 		glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
+	// 		glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
+	// 		glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
+	// 		glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
+	// 	glEnd(); 
+	// }
 
     if (g.showBigfoot) {
 		glPushMatrix();
@@ -1317,15 +1339,56 @@ void render()
 
 
     if (g.round1) {
+		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
+		glBegin(GL_QUADS);
+			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
+			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
+			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
+			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
+		glEnd(); 
+
         drawCardBack(3,4,45.0);	
+		unsigned int c = 0x00ffff44;
+		r.bot = g.yres - 60;
+		r.left = 250;
+		r.center = 0;
+		int h = 12;
+		ggprint16(&r, h, c, "Press 1 for Menu");
+		
 	}
     
     if (g.round2) {
+		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
+		glBegin(GL_QUADS);
+			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
+			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
+			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
+			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
+		glEnd(); 
         drawCardBack(4,4,45.0);	
+		unsigned int c = 0x00ffff44;
+		r.bot = g.yres - 60;
+		r.left = 250;
+		r.center = 0;
+		int h = 12;
+		ggprint16(&r, h, c, "Press 2 for Menu");
 	}
     
     if (g.round3) {
+		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
+		glBegin(GL_QUADS);
+			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
+			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
+			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
+			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
+		glEnd(); 
         drawCardBack(5,5,45.0);	
+		unsigned int c = 0x00ffff44;
+		r.bot = g.yres - 60;
+		r.left = 250;
+		r.center = 0;
+		int h = 12;
+		ggprint16(&r, h, c, "Press 3 for Menu");
 	}
 
 	if (g.flipped == 1) {
@@ -1343,6 +1406,34 @@ void render()
 			glTexCoord2f(1.0f, 1.0f); glVertex2i( w,-w);
 		glEnd();
 		glPopMatrix();
+	}
+
+	if (g.Startscreen){
+		glBindTexture(GL_TEXTURE_2D, g.StartTexture);
+		glBegin(GL_QUADS);
+			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
+			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
+			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
+			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
+		glEnd();
+		unsigned int c = 0x00ffff44;
+		r.bot = g.yres - 20;
+		r.left = 10;
+		r.center = 0;
+		int h = 12;
+		ggprint8b(&r, h, c, "1 - Round 1");
+		ggprint8b(&r, h, c, "2 - Round 2");    
+		ggprint8b(&r, h, c, "3 - Round 3");
+		ggprint8b(&r, h, c, "6 - witch");
+		ggprint8b(&r, h, c, "B - Bigfoot");
+		ggprint8b(&r, h, c, "F - Forest");
+		ggprint8b(&r, h, c, "S - Silhouette");
+		ggprint8b(&r, h, c, "T - Trees");
+		ggprint8b(&r, h, c, "U - Umbrella");
+		ggprint8b(&r, h, c, "R - Rain");
+		ggprint8b(&r, h, c, "D - Deflection");
+		ggprint8b(&r, h, c, "N - Sounds");
+		ggprint8b(&r, h, 0x00ff0000, "Press c for credits");
 	}
 
 	// if (g.flippedTwo == 1) {
@@ -1397,23 +1488,23 @@ void render()
 		drawUmbrella();
 	glBindTexture(GL_TEXTURE_2D, 0);
 	//
-	unsigned int c = 0x00ffff44;
-	r.bot = g.yres - 20;
-	r.left = 10;
-	r.center = 0;
-    int h = 12;
-	ggprint8b(&r, h, c, "1 - Round 1");
-	ggprint8b(&r, h, c, "2 - Round 2");    
-    ggprint8b(&r, h, c, "3 - Round 3");
-    ggprint8b(&r, h, c, "6 - witch");
-    ggprint8b(&r, h, c, "B - Bigfoot");
-	ggprint8b(&r, h, c, "F - Forest");
-	ggprint8b(&r, h, c, "S - Silhouette");
-	ggprint8b(&r, h, c, "T - Trees");
-	ggprint8b(&r, h, c, "U - Umbrella");
-	ggprint8b(&r, h, c, "R - Rain");
-	ggprint8b(&r, h, c, "D - Deflection");
-	ggprint8b(&r, h, c, "N - Sounds");
-    ggprint8b(&r, h, 0x00ff0000, "Press c for credits");
+	// unsigned int c = 0x00ffff44;
+	// r.bot = g.yres - 20;
+	// r.left = 10;
+	// r.center = 0;
+    // int h = 12;
+	// ggprint8b(&r, h, c, "1 - Round 1");
+	// ggprint8b(&r, h, c, "2 - Round 2");    
+    // ggprint8b(&r, h, c, "3 - Round 3");
+    // ggprint8b(&r, h, c, "6 - witch");
+    // ggprint8b(&r, h, c, "B - Bigfoot");
+	// ggprint8b(&r, h, c, "F - Forest");
+	// ggprint8b(&r, h, c, "S - Silhouette");
+	// ggprint8b(&r, h, c, "T - Trees");
+	// ggprint8b(&r, h, c, "U - Umbrella");
+	// ggprint8b(&r, h, c, "R - Rain");
+	// ggprint8b(&r, h, c, "D - Deflection");
+	// ggprint8b(&r, h, c, "N - Sounds");
+    // ggprint8b(&r, h, 0x00ff0000, "Press c for credits");
 }
 
