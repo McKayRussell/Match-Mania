@@ -1141,6 +1141,7 @@ void drawCardBack(int row, int col, float w)
 	float x = g.xres/2;
 	float y = g.yres-100.0;    
 
+<<<<<<< HEAD
 	for (int i=0; i<col; i++) {
 		for (int j=0; j<row; j++) {
 			glPushMatrix();
@@ -1366,6 +1367,22 @@ void flipCard(int mx, int my)
 	// if (g.round3) {
 
 	// }
+=======
+        for (int i=0; i<col; i++) {
+            for (int j=0; j<row; j++) {
+                glPushMatrix();
+                glTranslatef(x+(i*(w*2+10)), y-(j*(w*2+40)), 0);
+                glBindTexture(GL_TEXTURE_2D, g.cardTexture);
+		glBegin(GL_QUADS);
+    	       		glTexCoord2f(0.0f, 1.0f); glVertex2i(-w,-w);
+			glTexCoord2f(0.0f, 0.0f); glVertex2i(-w, w+30);
+			glTexCoord2f(1.0f, 0.0f); glVertex2i( w, w+30);
+			glTexCoord2f(1.0f, 1.0f); glVertex2i( w,-w);
+                glEnd();
+                glPopMatrix();
+            }
+        }      
+>>>>>>> dcae78cd5a1670ca152e01899205d8965535e22e
 }
 
 void render()
