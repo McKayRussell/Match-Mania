@@ -67,6 +67,8 @@ extern void show_mckays_credits(int, int);
 extern void show_dat_credits(int, int);
 extern void show_steven_credits(int, int);
 extern void show_clementes_credits(int, int);
+void flipCard(int mx, int my);
+void drawCardFront(int row, int col, float w);
 
 class Image {
 public:
@@ -121,7 +123,7 @@ public:
 			unlink(ppmname);
 	}
 };
-Image img[7] = {
+Image img[8] = {
 "./images/bigfoot.png",
 "./images/pic.png",
 "./images/front2.PNG",
@@ -129,6 +131,7 @@ Image img[7] = {
 "./images/credits.png",
 "./images/back2.png",
 "./images/witch.png",
+"./images/queen.jpg",
 };
 
 class Global {
@@ -142,7 +145,8 @@ public:
 	GLuint forestTransTexture;
 	GLuint umbrellaTexture;
 	GLuint creditsTexture;
-    GLuint cardTexture; 
+    GLuint cardTexture;
+	GLuint cardFront; 
     int showBigfoot;
 	int witch;
     int forest;
@@ -153,6 +157,10 @@ public:
 	int deflection;
 	int show_credits;
     int round1, round2, round3;
+	int flipped;
+	// int flippedTwo;
+	int cardRow;
+	int cardCol;
     Global() {
 		logOpen();
 		done=0;
@@ -168,6 +176,10 @@ public:
         show_credits=0;
         round1=round2=round3=0;
 	    witch=0;
+		flipped = 0;
+		// flippedTwo = 0;
+		cardRow = 0;
+		cardCol = 0;
     }
 	~Global() {
 		logClose();
@@ -223,20 +235,34 @@ class X11_wrapper {
 private:
 	Display *dpy;
 	Window win;
+	GLXContext glc;
 public:
-	X11_wrapper() {
+	X11_wrapper() { }
+	X11_wrapper(int w, int h) {
 		GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
-		//GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, None };
 		XSetWindowAttributes swa;
-		//setupScreenRes(640, 480);
-	    setupScreenRes(900, 600);
-		
-        dpy = XOpenDisplay(NULL);
+		setup_screen_res(g.xres, g.yres);
+		dpy = XOpenDisplay(NULL);
 		if (dpy == NULL) {
-			printf("\n\tcannot connect to X server\n\n");
+			printf("\n\tcannot connect to X server\n");
 			exit(EXIT_FAILURE);
 		}
 		Window root = DefaultRootWindow(dpy);
+		XWindowAttributes getWinAttr;
+		XGetWindowAttributes(dpy, root, &getWinAttr);
+		int fullscreen=0;
+		g.xres = w;
+		g.yres = h;
+		if (!w && !h) {
+			//Go to fullscreen.
+			g.xres = getWinAttr.width;
+			g.yres = getWinAttr.height;
+			//When window is fullscreen, there is no client window
+			//so keystrokes are linked to the root window.
+			XGrabKeyboard(dpy, root, False,
+				GrabModeAsync, GrabModeAsync, CurrentTime);
+			fullscreen=1;
+		}
 		XVisualInfo *vi = glXChooseVisual(dpy, 0, att);
 		if (vi == NULL) {
 			printf("\n\tno appropriate visual found\n\n");
@@ -245,36 +271,28 @@ public:
 		Colormap cmap = XCreateColormap(dpy, root, vi->visual, AllocNone);
 		swa.colormap = cmap;
 		swa.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask |
-							StructureNotifyMask | SubstructureNotifyMask;
+			PointerMotionMask | MotionNotify | ButtonPress | ButtonRelease |
+			StructureNotifyMask | SubstructureNotifyMask;
+		unsigned int winops = CWBorderPixel|CWColormap|CWEventMask;
+		if (fullscreen) {
+			winops |= CWOverrideRedirect;
+			swa.override_redirect = True;
+		}
 		win = XCreateWindow(dpy, root, 0, 0, g.xres, g.yres, 0,
-								vi->depth, InputOutput, vi->visual,
-								CWColormap | CWEventMask, &swa);
-		GLXContext glc = glXCreateContext(dpy, vi, NULL, GL_TRUE);
+			vi->depth, InputOutput, vi->visual, winops, &swa);
+		set_title();
+		glc = glXCreateContext(dpy, vi, NULL, GL_TRUE);
 		glXMakeCurrent(dpy, win, glc);
-		setTitle();
+		//show_mouse_cursor(0);
 	}
 	~X11_wrapper() {
 		XDestroyWindow(dpy, win);
 		XCloseDisplay(dpy);
 	}
-	void setTitle() {
+	void set_title() {
 		//Set the window title bar.
 		XMapWindow(dpy, win);
-		XStoreName(dpy, win, "3350 - Animation Template");
-	}
-	void setupScreenRes(const int w, const int h) {
-		g.xres = w;
-		g.yres = h;
-	}
-	void reshapeWindow(int width, int height) {
-		//window has been resized.
-		setupScreenRes(width, height);
-		//
-		glViewport(0, 0, (GLint)width, (GLint)height);
-		glMatrixMode(GL_PROJECTION); glLoadIdentity();
-		glMatrixMode(GL_MODELVIEW); glLoadIdentity();
-		glOrtho(0, g.xres, 0, g.yres, -1, 1);
-		setTitle();
+		XStoreName(dpy, win, "OpenGL sample  -  Press Esc");
 	}
 	void checkResize(XEvent *e) {
 		//The ConfigureNotify is sent by the
@@ -284,8 +302,24 @@ public:
 		XConfigureEvent xce = e->xconfigure;
 		if (xce.width != g.xres || xce.height != g.yres) {
 			//Window size did change.
-			reshapeWindow(xce.width, xce.height);
+			reshape_window(xce.width, xce.height);
 		}
+	}
+	void reshape_window(int width, int height) {
+		//window has been resized.
+		setup_screen_res(width, height);
+		glViewport(0, 0, (GLint)width, (GLint)height);
+		glMatrixMode(GL_PROJECTION); glLoadIdentity();
+		glMatrixMode(GL_MODELVIEW); glLoadIdentity();
+		glOrtho(0, g.xres, 0, g.yres, -1, 1);
+		set_title();
+	}
+	void setup_screen_res(const int w, const int h) {
+		g.xres = w;
+		g.yres = h;
+	}
+	void swapBuffers() {
+		glXSwapBuffers(dpy, win);
 	}
 	bool getXPending() {
 		return XPending(dpy);
@@ -295,10 +329,33 @@ public:
 		XNextEvent(dpy, &e);
 		return e;
 	}
-	void swapBuffers() {
-		glXSwapBuffers(dpy, win);
+	void set_mouse_position(int x, int y) {
+		XWarpPointer(dpy, None, win, 0, 0, 0, 0, x, y);
 	}
-} x11;
+	void show_mouse_cursor(const int onoff) {
+		if (onoff) {
+			//this removes our own blank cursor.
+			XUndefineCursor(dpy, win);
+			return;
+		}
+		//vars to make blank cursor
+		Pixmap blank;
+		XColor dummy;
+		char data[1] = {0};
+		Cursor cursor;
+		//make a blank cursor
+		blank = XCreateBitmapFromData (dpy, win, data, 1, 1);
+		if (blank == None)
+			printf("error: out of memory.\n");
+		cursor = XCreatePixmapCursor(dpy, blank, blank, &dummy, &dummy, 0, 0);
+		XFreePixmap(dpy, blank);
+		//this makes the cursor. then set it using this function
+		XDefineCursor(dpy, win, cursor);
+		//after you do not need the cursor anymore use this function.
+		//it will undo the last change done by XDefineCursor
+		//(thus do only use ONCE XDefineCursor and then XUndefineCursor):
+	}
+} x11(g.xres, g.yres);
 
 //function prototypes
 void initOpengl(void);
@@ -438,6 +495,7 @@ void initOpengl(void)
 	glGenTextures(1, &g.umbrellaTexture);
     glGenTextures(1, &g.creditsTexture);
     glGenTextures(1, &g.cardTexture); 
+	glGenTextures(1, &g.cardFront);
     
 	//-------------------------------------------------------------------------
 	//back of card
@@ -461,6 +519,24 @@ void initOpengl(void)
 	glTexImage2D(GL_TEXTURE_2D, 0, 3, img[4].width, img[4].height,
 									0, GL_RGB, GL_UNSIGNED_BYTE, img[4].data);
 	    */
+    //-------------------------------------------------------------------------
+	//front of card
+	//
+	
+	// if we want to change the width or height to the actual width or height
+	// 	of the image for the front then it is img[7]
+    int frontW = img[7].width;
+	int frontH = img[7].height;
+	//
+	glBindTexture(GL_TEXTURE_2D, g.cardFront);
+	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, frontW, frontH, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, img[7].data); 
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+	//
     //-------------------------------------------------------------------------
 	//bigfoot
 	//
@@ -603,21 +679,32 @@ void checkMouse(XEvent *e)
 	static int savex = 0;
 	static int savey = 0;
 	//
+	// if (e->type != ButtonRelease &&
+	// 	e->type != ButtonPress &&
+	// 	e->type != MotionNotify) {
+	// 	return;
+	// }
+	int mx = e->xbutton.x;
+	int my = e->xbutton.y;
 	if (e->type == ButtonRelease) {
-		return;
+		// return;
 	}
 	if (e->type == ButtonPress) {
 		if (e->xbutton.button==1) {
 			//Left button is down
+			flipCard(mx, my);
+			// drawCardFront(0, 0, 45.0);
 		}
 		if (e->xbutton.button==3) {
 			//Right button is down
 		}
 	}
-	if (savex != e->xbutton.x || savey != e->xbutton.y) {
-		//Mouse moved
-		savex = e->xbutton.x;
-		savey = e->xbutton.y;
+	if (e->type == MotionNotify) {
+		if (savex != mx || savey != my) {
+			//Mouse moved
+			savex = mx;
+			savey = my;
+		}
 	}
 }
 
@@ -1045,29 +1132,240 @@ void drawRaindrops()
 //inputs: row, column, size of card (width)
 void drawCardBack(int row, int col, float w)
 {
-        // STARTING PTS
-        // (top/left alignment)
-        // float x = 100.0;
-        // float y = g.yres-100.0; 
-        
-        //(top/middle alignment)
-        float x = g.xres/2;
-        float y = g.yres-100.0;    
+	// STARTING PTS
+	// (top/left alignment)
+	// float x = 100.0;
+	// float y = g.yres-100.0; 
+	
+	//(top/middle alignment)
+	float x = g.xres/2;
+	float y = g.yres-100.0;    
 
-        for (int i=0; i<col; i++) {
-            for (int j=0; j<row; j++) {
-                glPushMatrix();
-                glTranslatef(x+(i*(w*2+10)), y-(j*(w*2+40)), 0);
-                glBindTexture(GL_TEXTURE_2D, g.cardTexture);
-		        glBegin(GL_QUADS);
-    	            glTexCoord2f(0.0f, 1.0f); glVertex2i(-w,-w);
-			        glTexCoord2f(0.0f, 0.0f); glVertex2i(-w, w+30);
-			        glTexCoord2f(1.0f, 0.0f); glVertex2i( w, w+30);
-			        glTexCoord2f(1.0f, 1.0f); glVertex2i( w,-w);
-                glEnd();
-                glPopMatrix();
-            }
-        }      
+	for (int i=0; i<col; i++) {
+		for (int j=0; j<row; j++) {
+			glPushMatrix();
+			glTranslatef(x+(i*(w*2+10)), y-(j*(w*2+40)), 0);
+			glBindTexture(GL_TEXTURE_2D, g.cardTexture);
+			glBegin(GL_QUADS);
+				glTexCoord2f(0.0f, 1.0f); glVertex2i(-w,-w);
+				glTexCoord2f(0.0f, 0.0f); glVertex2i(-w, w+30);
+				glTexCoord2f(1.0f, 0.0f); glVertex2i( w, w+30);
+				glTexCoord2f(1.0f, 1.0f); glVertex2i( w,-w);
+			glEnd();
+			glPopMatrix();
+		}
+	}
+}
+
+
+//McKay Russell
+//inputs: row of clicked card, col of clicked card, width
+// void drawCardFront(int row, int col, float w)
+// {
+// 	// STARTING PTS
+// 	// (top/left alignment)
+// 	// float x = 100.0;
+// 	// float y = g.yres-100.0; 
+	
+// 	//(top/middle alignment)
+// 	float x = g.xres/2;
+// 	float y = g.yres-100.0;
+
+// 	glPushMatrix();
+// 	glTranslatef(x+(row*(w*2+10)), y-(col*(w*2+40)), 0);
+// 	glBindTexture(GL_TEXTURE_2D, g.cardFront);
+// 	glBegin(GL_QUADS);
+// 		glTexCoord2f(0.0f, 1.0f); glVertex2i(-w,-w);
+// 		glTexCoord2f(0.0f, 0.0f); glVertex2i(-w, w+30);
+// 		glTexCoord2f(1.0f, 0.0f); glVertex2i( w, w+30);
+// 		glTexCoord2f(1.0f, 1.0f); glVertex2i( w,-w);
+// 	glEnd();
+// 	glPopMatrix();
+// }
+
+//McKay Russell
+//inputs: mouse x coordinate, mouse y coordinate
+void flipCard(int mx, int my)
+{
+	// int thisCard = 0;
+	// int cardRow = 0;
+	// int cardCol = 0;
+	float x = g.xres/2 - 40;
+	float y = 25;
+	
+	// float x = g.xres-500.0;
+	// float y = g.yres-500.0;
+
+	if (g.round1) {
+		// y = 0;
+		// for (int i = 0; i < 4; i++) {
+		// 	x = 0;
+		// 	for (int j = 0; j < 3; j++) {
+		// 		if (mx > x+(100 * j) && mx < x+(100 * j)+85 &&
+		// 			my > 25 && my < 145 ) {
+		// 			g.cardRow = 0;
+		// 			g.cardCol = 1;
+		// 			g.flipped ^= 1;
+		// 		}
+		// 	}
+		// }
+		if (mx > x && mx < x+85 && my > y && my < y + 120) {
+			g.cardRow = 0;
+			g.cardCol = 0;
+			g.flipped = 1;
+		}
+		else if (mx > x+100 && mx < x+185 && my > y && my < y + 120) {
+			g.cardRow = 0;
+			g.cardCol = 1;
+			g.flipped ^= 1;
+		}
+		else if (mx > x+200 && mx < x+285 && my > y && my < y + 120) {
+			g.cardRow = 0;
+			g.cardCol = 2;
+			g.flipped ^= 1;
+		}
+		else if (mx > x+300 && mx < x+385 && my > y && my < y + 120) {
+			g.cardRow = 0;
+			g.cardCol = 3;
+			g.flipped ^= 1;
+		}
+		else if (mx > x && mx < x+85 && my > y+130 && my < y + 255) {
+			g.cardRow = 1;
+			g.cardCol = 0;
+			g.flipped ^= 1;
+		}
+		else if (mx > x+100 && mx < x+185 && my > y + 130 && my < y + 225) {
+			g.cardRow = 1;
+			g.cardCol = 1;
+			g.flipped ^= 1;
+		}
+		else if (mx > x+200 && mx < x+285 && my > y + 130 && my < y + 225) {
+			g.cardRow = 1;
+			g.cardCol = 2;
+			g.flipped ^= 1;
+		}
+		else if (mx > x+300 && mx < x+385 && my > y + 130 && my < y + 225) {
+			g.cardRow = 1;
+			g.cardCol = 3;
+			g.flipped ^= 1;
+		}
+		else if (mx > x && mx < x+85 && my > y+260 && my < y + 510) {
+			g.cardRow = 2;
+			g.cardCol = 0;
+			g.flipped ^= 1;
+		}
+		else if (mx > x+100 && mx < x+185 && my > y + 260 && my < y + 510) {
+			g.cardRow = 2;
+			g.cardCol = 1;
+			g.flipped ^= 1;
+		}
+		else if (mx > x+200 && mx < x+285 && my > y + 260 && my < y + 510) {
+			g.cardRow = 2;
+			g.cardCol = 2;
+			g.flipped ^= 1;
+		}
+		else if (mx > x+300 && mx < x+385 && my > y + 260 && my < y + 510) {
+			g.cardRow = 2;
+			g.cardCol = 3;
+			g.flipped ^= 1;
+		}
+
+		// if (mx > x && mx < x+85 && my > y && my < y + 120) {
+		// 	g.cardRow = 0;
+		// 	g.cardCol = 0;
+		// 	g.flippedTwo ^= 1;
+		// }
+		// else if (mx > x+100 && mx < x+185 && my > y && my < y + 120) {
+		// 	g.cardRow = 0;
+		// 	g.cardCol = 1;
+		// 	g.flippedTwo = 1;
+		// }
+		// else if (mx > x+200 && mx < x+285 && my > y && my < y + 120) {
+		// 	g.cardRow = 0;
+		// 	g.cardCol = 2;
+		// 	g.flippedTwo ^= 1;
+		// }
+		// else if (mx > x+300 && mx < x+385 && my > y && my < y + 120) {
+		// 	g.cardRow = 0;
+		// 	g.cardCol = 3;
+		// 	g.flippedTwo ^= 1;
+		// }
+		// else if (mx > x && mx < x+85 && my > y+130 && my < y + 255) {
+		// 	g.cardRow = 1;
+		// 	g.cardCol = 0;
+		// 	g.flippedTwo ^= 1;
+		// }
+		// else if (mx > x+100 && mx < x+185 && my > y + 130 && my < y + 225) {
+		// 	g.cardRow = 1;
+		// 	g.cardCol = 1;
+		// 	g.flippedTwo ^= 1;
+		// }
+		// else if (mx > x+200 && mx < x+285 && my > y + 130 && my < y + 225) {
+		// 	g.cardRow = 1;
+		// 	g.cardCol = 2;
+		// 	g.flippedTwo ^= 1;
+		// }
+		// else if (mx > x+300 && mx < x+385 && my > y + 130 && my < y + 225) {
+		// 	g.cardRow = 1;
+		// 	g.cardCol = 3;
+		// 	g.flippedTwo ^= 1;
+		// }
+		// else if (mx > x && mx < x+85 && my > y+260 && my < y + 510) {
+		// 	g.cardRow = 2;
+		// 	g.cardCol = 0;
+		// 	g.flippedTwo ^= 1;
+		// }
+		// else if (mx > x+100 && mx < x+185 && my > y + 260 && my < y + 510) {
+		// 	g.cardRow = 2;
+		// 	g.cardCol = 1;
+		// 	g.flippedTwo ^= 1;
+		// }
+		// else if (mx > x+200 && mx < x+285 && my > y + 260 && my < y + 510) {
+		// 	g.cardRow = 2;
+		// 	g.cardCol = 2;
+		// 	g.flippedTwo ^= 1;
+		// }
+		// else if (mx > x+300 && mx < x+385 && my > y + 260 && my < y + 510) {
+		// 	g.cardRow = 2;
+		// 	g.cardCol = 3;
+		// 	g.flippedTwo ^= 1;
+		// }
+		// int row = 3;
+		// int col = 4;
+		// float w = 45.0;
+		// for (int i = 0; i < col; i++) {
+        //     for (int j = 0; j < row; j++) {
+				
+		// // 		x += i*(w*2+10);
+		// // 		y -= j*(w*2+40);
+		// // 		printf("x: %f, y: %f  ", x+(i*(w*2+10)), y-(j*(w*2+40)));
+		// 		// if (mx >= x+(i*(w*2+10)) && my <= y-(j*(w*2+40)) && mx <= x+(i*(w*2+10))+100 && my >= y-(j*(w*2+40)) - 100) {
+		// 		// 	g.cardCol = i;
+		// 		// 	g.cardRow = j;
+		// 		// 	// drawCardFront(cardRow, cardCol, w);
+		// 		// 	// printf("mx: %d, my: %d", mx, my);
+		// 		// 	// g.cardRow = 0;
+		// 		// 	// g.cardCol = 0;
+		// 		// 	g.flipped ^= 1;
+		// 		// }
+        //         // glTranslatef(x+(i*(w*2+10)), y-(j*(w*2+40)), 0);
+        //         // glBindTexture(GL_TEXTURE_2D, g.cardTexture);
+		//         // glBegin(GL_QUADS);
+    	//         //     glTexCoord2f(0.0f, 1.0f); glVertex2i(-w,-w);
+		// 	    //     glTexCoord2f(0.0f, 0.0f); glVertex2i(-w, w+30);
+		// 	    //     glTexCoord2f(1.0f, 0.0f); glVertex2i( w, w+30);
+		// 	    //     glTexCoord2f(1.0f, 1.0f); glVertex2i( w,-w);
+        //     }
+        // }
+	}
+
+	// if (g.round2) {
+
+	// }
+
+	// if (g.round3) {
+
+	// }
 }
 
 void render()
@@ -1182,6 +1480,40 @@ void render()
     if (g.round3) {
         drawCardBack(5,5,35.0);	
 	}
+
+	if (g.flipped == 1) {
+		float x = g.xres/2;
+		float y = g.yres-100.0;
+		int w = 45.0;
+		// printf("cardCol: %d, cardRow: %d ", g.cardCol, g.cardRow);
+		glPushMatrix();
+		glTranslatef(x+(g.cardCol*(w*2+10)), y-(g.cardRow*(w*2+40)), 0);
+		glBindTexture(GL_TEXTURE_2D, g.cardFront);
+		glBegin(GL_QUADS);
+			glTexCoord2f(0.0f, 1.0f); glVertex2i(-w,-w);
+			glTexCoord2f(0.0f, 0.0f); glVertex2i(-w, w+30);
+			glTexCoord2f(1.0f, 0.0f); glVertex2i( w, w+30);
+			glTexCoord2f(1.0f, 1.0f); glVertex2i( w,-w);
+		glEnd();
+		glPopMatrix();
+	}
+
+	// if (g.flippedTwo == 1) {
+	// 	float x = g.xres/2;
+	// 	float y = g.yres-100.0;
+	// 	int w = 45.0;
+	// 	// printf("cardCol: %d, cardRow: %d ", g.cardCol, g.cardRow);
+	// 	glPushMatrix();
+	// 	glTranslatef(x+(g.cardCol*(w*2+10)), y-(g.cardRow*(w*2+40)), 0);
+	// 	glBindTexture(GL_TEXTURE_2D, g.cardFront);
+	// 	glBegin(GL_QUADS);
+	// 		glTexCoord2f(0.0f, 1.0f); glVertex2i(-w,-w);
+	// 		glTexCoord2f(0.0f, 0.0f); glVertex2i(-w, w+30);
+	// 		glTexCoord2f(1.0f, 0.0f); glVertex2i( w, w+30);
+	// 		glTexCoord2f(1.0f, 1.0f); glVertex2i( w,-w);
+	// 	glEnd();
+	// 	glPopMatrix();
+	// }
 
     if (g.show_credits){
         glBindTexture(GL_TEXTURE_2D, g.creditsTexture);
