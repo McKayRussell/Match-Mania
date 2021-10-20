@@ -743,6 +743,7 @@ void mouse_click(int action)
 			button.click = 1;
 			g.Startscreen ^= 1;
 			g.round1 ^= 1;
+			g.flipped = 0;
 		}
 	}		
 
@@ -818,17 +819,17 @@ int checkKeys(XEvent *e)
 	}
 	switch (key) {
         case XK_1:
-            g.round2 = g.round3 = 0;
+            g.round2 = g.round3 = g.flipped =0;
 			g.Startscreen ^= 1;
             g.round1 ^= 1;
             break;
         case XK_2:
-            g.round1 = g.round3 = 0;
+            g.round1 = g.round3 = g.flipped =0;
 			g.Startscreen ^= 1;
             g.round2 ^= 1;
             break;
         case XK_3:
-            g.round1 = g.round2 = 0;
+            g.round1 = g.round2 = g.flipped = 0;
 			g.Startscreen ^= 1;
             g.round3 ^= 1;
             break; 
