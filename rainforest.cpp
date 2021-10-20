@@ -162,6 +162,7 @@ public:
 	int flipped;
 	int Startscreen;
 	// int flippedTwo;
+	int lrbutton;
 	int cardRow;
 	int cardCol;
     Global() {
@@ -184,12 +185,26 @@ public:
 		cardRow = 0;
 		cardCol = 0;
 		Startscreen = 1;
+		lrbutton = 0; // <--------------
     }
 	~Global() {
 		logClose();
 	}
 } g;
 //
+/* ADDED FOR BUTTON */
+class t_button {
+public:
+	Rect r;
+	char text[32];
+	int over;
+	int down;
+	int click;
+	float color[3];
+	float dcolor[3];
+	unsigned int text_color;
+} button;
+
 class Witch {
 public:
 	Vec pos;
@@ -274,9 +289,15 @@ public:
 		} 
 		Colormap cmap = XCreateColormap(dpy, root, vi->visual, AllocNone);
 		swa.colormap = cmap;
-		swa.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask |
-			PointerMotionMask | MotionNotify | ButtonPress | ButtonRelease |
-			StructureNotifyMask | SubstructureNotifyMask;
+		swa.event_mask = ExposureMask | 
+						KeyPressMask | 
+						KeyReleaseMask |
+						PointerMotionMask | 
+						MotionNotify | 
+						ButtonPress | 
+						ButtonRelease |
+						StructureNotifyMask | 
+						SubstructureNotifyMask;
 		unsigned int winops = CWBorderPixel|CWColormap|CWEventMask;
 		if (fullscreen) {
 			winops |= CWOverrideRedirect;
@@ -689,6 +710,42 @@ void init() {
     MakeVector(-150.0,180.0,0.0, witch.pos);
 	MakeVector(6.0,0.0,0.0, witch.vel);
 
+	//initialize buttons...
+	button.r.width = 200;
+	button.r.height = 100;
+	button.r.left = g.xres/2 - button.r.width/2;
+	button.r.bot = 50;
+	button.r.right =
+		button.r.left + button.r.width;
+	button.r.top = button.r.bot + button.r.height;
+	button.r.centerx =
+		(button.r.left + button.r.right) / 2;
+	button.r.centery =
+		(button.r.bot + button.r.top) / 2;
+	strcpy(button.text, "Press to Play");
+	button.down = 0;
+	button.click = 0;
+	button.color[0] = 0.4f;
+	button.color[1] = 0.4f;
+	button.color[2] = 0.7f;
+	button.dcolor[0] = button.color[0] * 0.5f;
+	button.dcolor[1] = button.color[1] * 0.5f;
+	button.dcolor[2] = button.color[2] * 0.5f;
+	button.text_color = 0x00ffffff;
+
+}
+// Mouse Button Clicked
+void mouse_click(int action)
+{
+	if (action == 1) {
+		if (button.over) {
+			button.down = 1;
+			button.click = 1;
+			g.Startscreen ^= 1;
+			g.round1 ^= 1;
+		}
+	}		
+
 }
 
 void checkMouse(XEvent *e)
@@ -697,6 +754,8 @@ void checkMouse(XEvent *e)
 	//Was a mouse button clicked?
 	static int savex = 0;
 	static int savey = 0;
+
+	g.lrbutton = 0;
 	//
 	// if (e->type != ButtonRelease &&
 	// 	e->type != ButtonPress &&
@@ -707,10 +766,12 @@ void checkMouse(XEvent *e)
 	int my = e->xbutton.y;
 	if (e->type == ButtonRelease) {
 		// return;
+		return;
 	}
 	if (e->type == ButtonPress) {
 		if (e->xbutton.button==1) {
 			//Left button is down
+			g.lrbutton = 1;
 			flipCard(mx, my);
 			// drawCardFront(0, 0, 45.0);
 		}
@@ -718,6 +779,7 @@ void checkMouse(XEvent *e)
 			//Right button is down
 		}
 	}
+	my = g.yres - my;
 	if (e->type == MotionNotify) {
 		if (savex != mx || savey != my) {
 			//Mouse moved
@@ -725,6 +787,17 @@ void checkMouse(XEvent *e)
 			savey = my;
 		}
 	}
+
+	// is mouse over square?
+	button.over = 0;
+	if (savex >= button.r.left &&
+		savex <= button.r.right &&
+		savey >= button.r.bot &&
+		savey <= button.r.top) {
+			button.over = 1;
+	}
+	if (g.lrbutton)
+		mouse_click(1);
 }
 
 int checkKeys(XEvent *e)
@@ -745,8 +818,8 @@ int checkKeys(XEvent *e)
 	}
 	switch (key) {
         case XK_1:
-			g.Startscreen ^= 1;
             g.round2 = g.round3 = 0;
+			g.Startscreen ^= 1;
             g.round1 ^= 1;
             break;
         case XK_2:
@@ -1346,6 +1419,7 @@ void render()
 			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
 			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
 		glEnd(); 
+		glPopMatrix();
 
         drawCardBack(3,4,45.0);	
 		unsigned int c = 0x00ffff44;
@@ -1354,7 +1428,6 @@ void render()
 		r.center = 0;
 		int h = 12;
 		ggprint16(&r, h, c, "Press 1 for Menu");
-		
 	}
     
     if (g.round2) {
@@ -1434,6 +1507,40 @@ void render()
 		ggprint8b(&r, h, c, "D - Deflection");
 		ggprint8b(&r, h, c, "N - Sounds");
 		ggprint8b(&r, h, 0x00ff0000, "Press c for credits");
+
+		// Draw Buttons
+		if (button.over) {
+			glColor3f(1.0f, 0.0f, 0.0f);
+			//draw a highlight around button
+			glLineWidth(2);
+			glBegin(GL_LINE_LOOP);
+				glVertex2i(button.r.left-2,  button.r.bot-2);
+				glVertex2i(button.r.left-2,  button.r.top+2);
+				glVertex2i(button.r.right+2, button.r.top+2);
+				glVertex2i(button.r.right+2, button.r.bot-2);
+				glVertex2i(button.r.left-2,  button.r.bot-2);
+			glEnd();
+			glLineWidth(1);
+		}
+		if (button.down) {
+			glColor3fv(button.dcolor);
+		} else {
+			glColor3fv(button.color);
+		}
+		glBegin(GL_QUADS);
+			glVertex2i(button.r.left,  button.r.bot);
+			glVertex2i(button.r.left,  button.r.top);
+			glVertex2i(button.r.right, button.r.top);
+			glVertex2i(button.r.right, button.r.bot);
+		glEnd();
+		r.left = button.r.centerx;
+		r.bot  = button.r.centery-8;
+		r.center = 1;
+		if (button.down) {
+			ggprint16(&r, 0, button.text_color, "Pressed!");
+		} else {
+			ggprint16(&r, 0, button.text_color, button.text);
+		}
 	}
 
 	// if (g.flippedTwo == 1) {
@@ -1488,23 +1595,5 @@ void render()
 		drawUmbrella();
 	glBindTexture(GL_TEXTURE_2D, 0);
 	//
-	// unsigned int c = 0x00ffff44;
-	// r.bot = g.yres - 20;
-	// r.left = 10;
-	// r.center = 0;
-    // int h = 12;
-	// ggprint8b(&r, h, c, "1 - Round 1");
-	// ggprint8b(&r, h, c, "2 - Round 2");    
-    // ggprint8b(&r, h, c, "3 - Round 3");
-    // ggprint8b(&r, h, c, "6 - witch");
-    // ggprint8b(&r, h, c, "B - Bigfoot");
-	// ggprint8b(&r, h, c, "F - Forest");
-	// ggprint8b(&r, h, c, "S - Silhouette");
-	// ggprint8b(&r, h, c, "T - Trees");
-	// ggprint8b(&r, h, c, "U - Umbrella");
-	// ggprint8b(&r, h, c, "R - Rain");
-	// ggprint8b(&r, h, c, "D - Deflection");
-	// ggprint8b(&r, h, c, "N - Sounds");
-    // ggprint8b(&r, h, 0x00ff0000, "Press c for credits");
 }
 
