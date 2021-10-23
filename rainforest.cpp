@@ -24,6 +24,7 @@
 #include "log.h"
 //#include "ppm.h"
 #include "fonts.h"
+#include <iostream>
 
 //defined types
 typedef double Flt;
@@ -135,6 +136,15 @@ Image img[9] = {
 "./images/Menu.jpg",
 };
 
+Image card[6] = {
+"./cards/c1.jpg",
+"./cards/c2.jpg",
+"./cards/c3.png",
+"./cards/c4.png",
+"./cards/c5.jpg",
+"./cards/c6.png",
+};
+
 class Global {
 public:
 	int done;
@@ -149,6 +159,13 @@ public:
     GLuint cardTexture;
 	GLuint cardFront; 
 	GLuint StartTexture;
+    //cards
+    GLuint card1Texture;
+    GLuint card2Texture;
+    GLuint card3Texture;
+    GLuint card4Texture;
+    GLuint card5Texture;
+    GLuint card6Texture;
     int showBigfoot;
 	int witch;
     int forest;
@@ -165,11 +182,20 @@ public:
 	int lrbutton;
 	int cardRow;
 	int cardCol;
+    struct Card {
+        int id;
+        //int flipped = 0;
+        float xbox;
+        float ybox;
+        float wbox;
+        float hbox;
+    } cards[3][4];
+    
     Global() {
 		logOpen();
 		done=0;
 		xres=1100;
-		yres=800;
+		yres=700;
         showBigfoot=0;
 		forest=0;
 		silhouette=1;
@@ -185,7 +211,22 @@ public:
 		cardRow = 0;
 		cardCol = 0;
 		Startscreen = 1;
-		lrbutton = 0; // <--------------
+		lrbutton = 0; 
+        
+        //Dat
+        //starting pts  
+	    float x = xres/2;
+	    float y = yres - 85;    
+         
+        for (int i=0; i<3; i++) {
+            for (int j=0; j<4; j++) {
+                cards[i][j].xbox = x + (j*100.0f);
+                cards[i][j].ybox = y - (i*130.0f);
+                cards[i][j].wbox = 45.0f;
+                cards[i][j].hbox = 60.0f;
+            }
+        }
+    
     }
 	~Global() {
 		logClose();
@@ -407,12 +448,27 @@ int main()
 			checkMouse(&e);
 			done = checkKeys(&e);
 		}
-		//
+		
+        //GLint timer;
+        //glGetIntegerv(GL_TIMESTAMP, &timer);
+        //printf("Milliseconds: %f\n", timer/1000000.0);
+        /*
+        timeprec = glutGet(GLUT_ELAPSED_TIME);
+        RenderScene(){time = glutGet(GLUT_ELAPSED_TIME);
+            timediff=time - timeprec;
+            timeprec=time;
+            angle += 360*(timediff/5000);
+        } */
+        //time = glutGet(GLUT_ELAPSED_TIME);
+        
+        //
 		//Below is a process to apply physics at a consistent rate.
 		//1. Get the current time.
 		clock_gettime(CLOCK_REALTIME, &timeCurrent);
 		//2. How long since we were here last?
-		timeSpan = timeDiff(&timeStart, &timeCurrent);
+        //printf("hi: %s\n", timeCurrent);
+       
+        timeSpan = timeDiff(&timeStart, &timeCurrent);
 		//3. Save the current time as our new starting time.
 		timeCopy(&timeStart, &timeCurrent);
 		//4. Add time-span to our countdown amount.
@@ -522,21 +578,116 @@ void initOpengl(void)
     glGenTextures(1, &g.cardTexture); 
 	glGenTextures(1, &g.cardFront);
 	glGenTextures(1, &g.StartTexture);
-    
-	//-------------------------------------------------------------------------
-	//Startscreen
+    //
+    //cards
+    glGenTextures(1, &g.card1Texture); 
+	glGenTextures(1, &g.card2Texture); 
+	glGenTextures(1, &g.card3Texture); 
+	glGenTextures(1, &g.card4Texture); 
+	glGenTextures(1, &g.card5Texture); 
+	glGenTextures(1, &g.card6Texture); 
+
+    //-------------------------------------------------------------------------
+	//card1
 	//
 	
-    int w8 = img[8].width;
-	int h8 = img[8].height;
+    int w9 = card[0].width;
+	int h9 = card[0].height;
 	//
-	glBindTexture(GL_TEXTURE_2D, g.StartTexture);
+	glBindTexture(GL_TEXTURE_2D, g.card1Texture);
 	//
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, 3, w8, h8, 0,
-		GL_RGB, GL_UNSIGNED_BYTE, img[8].data); 
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, w9, h9, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, card[0].data); 
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    //-------------------------------------------------------------------------
+	//card2
+	//
+	
+    w9 = card[1].width;
+	h9 = card[1].height;
+	//
+	glBindTexture(GL_TEXTURE_2D, g.card2Texture);
+	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, w9, h9, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, card[1].data); 
+    glBindTexture(GL_TEXTURE_2D, 0);
+ 
+
+    //-------------------------------------------------------------------------
+	//card3
+	//
+	
+    w9 = card[2].width;
+	h9 = card[2].height;
+	//
+	glBindTexture(GL_TEXTURE_2D, g.card3Texture);
+	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, w9, h9, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, card[2].data); 
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    //-------------------------------------------------------------------------
+	//card4
+	//
+	
+    w9 = card[3].width;
+    h9 = card[3].height;
+	//
+	glBindTexture(GL_TEXTURE_2D, g.card4Texture);
+	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, w9, h9, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, card[3].data); 
+    glBindTexture(GL_TEXTURE_2D, 0);
+ 
+    //-------------------------------------------------------------------------
+	//card5
+	//
+	
+    w9 = card[4].width;
+	h9 = card[4].height;
+	//
+	glBindTexture(GL_TEXTURE_2D, g.card5Texture);
+	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, w9, h9, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, card[4].data); 
+    glBindTexture(GL_TEXTURE_2D, 0);
+ 
+    //-------------------------------------------------------------------------
+	//card6
+	//
+    w9 = card[5].width;
+	h9 = card[5].height;
+	//
+	glBindTexture(GL_TEXTURE_2D, g.card6Texture);
+	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, w9, h9, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, card[5].data); 
+    glBindTexture(GL_TEXTURE_2D, 0); 
+
+	//-------------------------------------------------------------------------
+	//Startscreen
+	//
+    glBindTexture(GL_TEXTURE_2D, g.StartTexture);
+	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, img[8].width, img[8].height,
+									0, GL_RGB, GL_UNSIGNED_BYTE, img[8].data);
+	
+
 	//-------------------------------------------------------------------------
 	//back of card
 	//
@@ -1224,34 +1375,53 @@ void drawRaindrops()
 	glLineWidth(1);
 }
 
+void round1() {
+    int array[3][4] =  {{0,6,1,6},
+                        {5,4,3,6},
+                        {1,3,4,0}};
+    if (g.flipped == 1) {
+
+    } 
+}
+
+
+
+//Dat
+void round1Card(int row,int col, GLuint texture) 
+{
+    glPushMatrix();
+    glTranslatef(g.cards[row][col].xbox, g.cards[row][col].ybox, 0.0f);
+			
+    glBindTexture(GL_TEXTURE_2D, texture);
+	glBegin(GL_QUADS);    
+        glTexCoord2f(0.0f, 1.0f); 
+        glVertex2f(-g.cards[row][col].wbox, -g.cards[row][col].hbox);
+        glTexCoord2f(0.0f, 0.0f); 
+        glVertex2f(-g.cards[row][col].wbox,  g.cards[row][col].hbox); 
+        glTexCoord2f(1.0f, 0.0f); 
+        glVertex2f( g.cards[row][col].wbox,  g.cards[row][col].hbox); 
+        glTexCoord2f(1.0f, 1.0f); 
+        glVertex2f( g.cards[row][col].wbox, -g.cards[row][col].hbox);      
+    glEnd();
+    glPopMatrix();
+}
+
+
+
 //Dat Pham
 //inputs: row, column, size of card (width)
-void drawCardBack(int row, int col, float w)
+void drawCardBack(int row, int col)
 {
-	// STARTING PTS
-	// (top/left alignment)
-	// float x = 100.0;
-	// float y = g.yres-100.0; 
-	
-	//(top/middle alignment)
-	float x = g.xres/2;
-	float y = g.yres-100.0;    
-
-	for (int i=0; i<col; i++) {
-		for (int j=0; j<row; j++) {
-			glPushMatrix();
-			glTranslatef(x+(i*(w*2+10)), y-(j*(w*2+40)), 0);
-			glBindTexture(GL_TEXTURE_2D, g.cardTexture);
-			glBegin(GL_QUADS);
-				glTexCoord2f(0.0f, 1.0f); glVertex2i(-w,-w);
-				glTexCoord2f(0.0f, 0.0f); glVertex2i(-w, w+30);
-				glTexCoord2f(1.0f, 0.0f); glVertex2i( w, w+30);
-				glTexCoord2f(1.0f, 1.0f); glVertex2i( w,-w);
-			glEnd();
-			glPopMatrix();
-		}
+	for (int i=0; i<row; i++) {
+		for (int j=0; j<col; j++) {	
+            round1Card(i,j,g.cardTexture);
+        }
 	}
+
+    //round1Card(0,0,g.card1Texture); 
+         
 }
+
 
 //McKay Russell
 //inputs: mouse x coordinate, mouse y coordinate
@@ -1259,8 +1429,9 @@ void flipCard(int mx, int my)
 {
 	float x = g.xres/2 - 40;
 	float y = 25;
-	int rows = 0;
-	int cols = 0;
+	
+    int rows = 0;
+    int cols = 0;    
 
 	if (g.round1) {
 		rows = 3;
@@ -1270,10 +1441,10 @@ void flipCard(int mx, int my)
 				if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
 						&& my < y+(130 * i)+120)
 				{
-					g.cardRow = i;
+                    g.cardRow = i;
 					g.cardCol = j;
 					g.flipped ^= 1;
-				}
+                }
 			}
 		}
 	}
@@ -1309,13 +1480,15 @@ void flipCard(int mx, int my)
 			}
 		}
 	}
+   
 }
+
 
 void render()
 {
-	Rect r;
+    Rect r;
 
-	//Clear the screen
+    //Clear the screen
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	//
@@ -1422,7 +1595,7 @@ void render()
 		glEnd(); 
 		glPopMatrix();
 
-        drawCardBack(3,4,45.0);	
+        drawCardBack(3,4);	
 		unsigned int c = 0x00ffff44;
 		r.bot = g.yres - 60;
 		r.left = 250;
@@ -1439,7 +1612,7 @@ void render()
 			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
 			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
 		glEnd(); 
-        drawCardBack(4,4,45.0);	
+        drawCardBack(4,4);	
 		unsigned int c = 0x00ffff44;
 		r.bot = g.yres - 60;
 		r.left = 250;
@@ -1456,7 +1629,7 @@ void render()
 			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
 			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
 		glEnd(); 
-        drawCardBack(5,5,45.0);	
+        drawCardBack(5,5);	
 		unsigned int c = 0x00ffff44;
 		r.bot = g.yres - 60;
 		r.left = 250;
@@ -1466,12 +1639,14 @@ void render()
 	}
 
 	if (g.flipped == 1) {
+        round1Card(g.cardRow,g.cardCol,g.card1Texture);
+        /*
 		float x = g.xres/2;
 		float y = g.yres-100.0;
 		int w = 45.0;
 		// printf("cardCol: %d, cardRow: %d ", g.cardCol, g.cardRow);
-		glPushMatrix();
-		glTranslatef(x+(g.cardCol*(w*2+10)), y-(g.cardRow*(w*2+40)), 0);
+		glPushMatrix();		
+        glTranslatef(x+(g.cardCol*(w*2+10)), y-(g.cardRow*(w*2+40)), 0);
 		glBindTexture(GL_TEXTURE_2D, g.cardFront);
 		glBegin(GL_QUADS);
 			glTexCoord2f(0.0f, 1.0f); glVertex2i(-w,-w);
@@ -1479,7 +1654,7 @@ void render()
 			glTexCoord2f(1.0f, 0.0f); glVertex2i( w, w+30);
 			glTexCoord2f(1.0f, 1.0f); glVertex2i( w,-w);
 		glEnd();
-		glPopMatrix();
+		glPopMatrix();  */ 
 	}
 
 	if (g.Startscreen){
