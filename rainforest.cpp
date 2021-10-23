@@ -182,6 +182,8 @@ public:
 	int lrbutton;
 	int cardRow;
 	int cardCol;
+    float start_x;
+    float start_y;
     struct Card {
         int id;
         //int flipped = 0;
@@ -215,13 +217,13 @@ public:
         
         //Dat
         //starting pts  
-	    float x = xres/2;
-	    float y = yres - 85;    
+	    start_x = xres/2;
+	    start_y = yres-85;    
          
         for (int i=0; i<3; i++) {
             for (int j=0; j<4; j++) {
-                cards[i][j].xbox = x + (j*100.0f);
-                cards[i][j].ybox = y - (i*130.0f);
+                cards[i][j].xbox = start_x + (j*100.0f);
+                cards[i][j].ybox = start_y - (i*130.0f);
                 cards[i][j].wbox = 45.0f;
                 cards[i][j].hbox = 60.0f;
             }
@@ -1423,9 +1425,10 @@ void drawCardBack(int row, int col)
 //inputs: mouse x coordinate, mouse y coordinate
 void flipCard(int mx, int my)
 {
-	float x = g.xres/2 - 40;
-	float y = 25;
-	
+	//float x = g.xres/2 - 40;
+	//float y = 25;
+	float x = g.start_x-40; 
+    float y = ((g.start_y+85)/g.yres)+25;
     int rows = 0;
     int cols = 0;    
 
