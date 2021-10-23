@@ -1375,10 +1375,10 @@ void drawRaindrops()
 	glLineWidth(1);
 }
 
-void round1() {
-    int array[3][4] =  {{0,6,1,6},
+void round1Match() {
+    int array[3][4] =  {{1,6,2,6},
                         {5,4,3,6},
-                        {1,3,4,0}};
+                        {2,3,4,1}};
     if (g.flipped == 1) {
 
     } 
@@ -1409,17 +1409,13 @@ void round1Card(int row,int col, GLuint texture)
 
 
 //Dat Pham
-//inputs: row, column, size of card (width)
 void drawCardBack(int row, int col)
 {
 	for (int i=0; i<row; i++) {
 		for (int j=0; j<col; j++) {	
             round1Card(i,j,g.cardTexture);
         }
-	}
-
-    //round1Card(0,0,g.card1Texture); 
-         
+	}        
 }
 
 
@@ -1639,7 +1635,72 @@ void render()
 	}
 
 	if (g.flipped == 1) {
-        round1Card(g.cardRow,g.cardCol,g.card1Texture);
+        //3x4 cards (round1) 
+        //row1
+        if (g.cardRow == 0 && g.cardCol == 0) {
+            g.cards[g.cardRow][g.cardCol].id = 1;
+            round1Card(g.cardRow,g.cardCol,g.card1Texture);
+        }
+
+        if (g.cardRow == 0 && g.cardCol == 1) {
+            g.cards[g.cardRow][g.cardCol].id = 6;
+            round1Card(g.cardRow,g.cardCol,g.card6Texture);
+        }
+
+            
+        if (g.cardRow == 0 && g.cardCol == 2) {
+            g.cards[g.cardRow][g.cardCol].id = 2;
+            round1Card(g.cardRow,g.cardCol,g.card2Texture);
+        }
+
+        if (g.cardRow == 0 && g.cardCol == 3) {
+            g.cards[g.cardRow][g.cardCol].id = 6;
+            round1Card(g.cardRow,g.cardCol,g.card6Texture);
+        }
+        
+        //row2
+        if (g.cardRow == 1 && g.cardCol == 0) {
+            g.cards[g.cardRow][g.cardCol].id = 5;
+            round1Card(g.cardRow,g.cardCol,g.card5Texture);
+        }
+        
+        if (g.cardRow == 1 && g.cardCol == 1) {
+            g.cards[g.cardRow][g.cardCol].id = 4;
+            round1Card(g.cardRow,g.cardCol,g.card4Texture);
+        }
+        
+        if (g.cardRow == 1 && g.cardCol == 2) {
+            g.cards[g.cardRow][g.cardCol].id = 3;
+            round1Card(g.cardRow,g.cardCol,g.card3Texture);
+        }
+
+        if (g.cardRow == 1 && g.cardCol == 3) {
+            g.cards[g.cardRow][g.cardCol].id = 6;
+            round1Card(g.cardRow,g.cardCol,g.card6Texture);
+        }
+        //row3
+        if (g.cardRow == 2 && g.cardCol == 0) {
+            g.cards[g.cardRow][g.cardCol].id = 2;
+            round1Card(g.cardRow,g.cardCol,g.card2Texture);
+        }
+
+        if (g.cardRow == 2 && g.cardCol == 1) {
+            g.cards[g.cardRow][g.cardCol].id = 3;
+            round1Card(g.cardRow,g.cardCol,g.card3Texture);
+        }
+
+        if (g.cardRow == 2 && g.cardCol == 2) {
+            g.cards[g.cardRow][g.cardCol].id = 4;
+            round1Card(g.cardRow,g.cardCol,g.card4Texture);
+        }
+
+
+        if (g.cardRow == 2 && g.cardCol == 3) {
+            g.cards[g.cardRow][g.cardCol].id = 1;
+            round1Card(g.cardRow,g.cardCol,g.card1Texture);
+        }
+
+
         /*
 		float x = g.xres/2;
 		float y = g.yres-100.0;
