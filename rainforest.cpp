@@ -25,6 +25,7 @@
 //#include "ppm.h"
 #include "fonts.h"
 #include <iostream>
+#include <unistd.h>
 
 //defined types
 typedef double Flt;
@@ -1766,9 +1767,10 @@ void playCards(int row, int col)
 {
     int prev_i, prev_j, prev_id; //remember previous card
     int compare = 0;
-
+	
     for (int i=0; i<row; i++) {
         for (int j=0; j<col; j++) {
+			usleep(12000);
             if (g.cards[i][j].flip == 1 && g.cards[i][j].match == 0) {
                 //choosing card pack
                 if (g.round1)     
@@ -1794,7 +1796,7 @@ void playCards(int row, int col)
                         compare = 0;
                         break;
                     }
-                        
+                    
                     g.cards[i][j].flip = 0;
                     g.cards[prev_i][prev_j].flip = 0; 
                     compare = 0; 
@@ -1832,76 +1834,18 @@ void playCards(int row, int col)
 //inputs: mouse x coordinate, mouse y coordinate
 void flipCard(int mx, int my, int row, int col)
 {
-	//float x = g.xres/2 - 40;
-	//float y = 25;
 	float x = g.start_x-40; 
     float y = ((g.start_y+85)/g.yres)+25;
   
 	for (int i = 0; i < row; i++) {
 		for (int j = 0; j < col; j++) {
 			if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
-						&& my < y+(130 * i)+120)
+					&& my < y+(130 * i)+120)
 			{
-                 	g.cards[i][j].flip = 1;  
+                g.cards[i][j].flip = 1;  
 			}
-                }
+        }
 	}
-		
-	
-  
-    
-    /*
-    	int rows = 0;
-	int cols = 0;
-	
- 	if (g.round1) {
-		rows = 3;
-		cols = 4;
-		for (int i = 0; i < rows; i++) {
-			for (int j = 0; j < cols; j++) {
-				if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
-						&& my < y+(130 * i)+120)
-				{
-                    g.cardRow = i;
-					g.cardCol = j;
-					g.flipped = 1; 
-                }
-			}
-		}
-	}
-
-	if (g.round2) {
-		rows = 4;
-		cols = 4;
-		for (int i = 0; i < rows; i++) {
-			for (int j = 0; j < cols; j++) {
-				if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
-						&& my < y+(130 * i)+120)
-				{
-					g.cardRow = i;
-					g.cardCol = j;
-					g.flipped ^= 1;
-				}
-			}
-		}
-	}
-
-	if (g.round3) {
-		rows = 5;
-		cols = 5;
-		for (int i = 0; i < rows; i++) {
-			for (int j = 0; j < cols; j++) {
-				if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
-						&& my < y+(130 * i)+120)
-				{
-					g.cardRow = i;
-					g.cardCol = j;
-					g.flipped ^= 1;
-				}
-			}
-		}
-	}
-    */
 }  
 
 void render()
@@ -1964,7 +1908,7 @@ void render()
 		r.left = 250;
 		r.center = 0;
 		int h = 12;
-		ggprint16(&r, h, c, "Press 2 for Menu");
+		ggprint16(&r, h, c, "Press 1 for Menu");
 
    	}
     
