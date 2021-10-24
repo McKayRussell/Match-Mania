@@ -1837,16 +1837,16 @@ void flipCard(int mx, int my, int row, int col)
 	float x = g.start_x-40; 
     float y = ((g.start_y+85)/g.yres)+25;
   
-		for (int i = 0; i < row; i++) {
-			for (int j = 0; j < col; j++) {
-				if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
+	for (int i = 0; i < row; i++) {
+		for (int j = 0; j < col; j++) {
+			if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
 						&& my < y+(130 * i)+120)
-				{
-                    g.cards[i][j].flip = 1;     
+			{
+                 	g.cards[i][j].flip = 1;     
                 }
-			}
-		}
-	//}
+	}
+		
+	
   
     
     /*
