@@ -1842,7 +1842,8 @@ void flipCard(int mx, int my, int row, int col)
 			if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
 						&& my < y+(130 * i)+120)
 			{
-                 	g.cards[i][j].flip = 1;     
+                 	g.cards[i][j].flip = 1;  
+			}
                 }
 	}
 		
