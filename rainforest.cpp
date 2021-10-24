@@ -1836,12 +1836,7 @@ void flipCard(int mx, int my, int row, int col)
 	//float y = 25;
 	float x = g.start_x-40; 
     float y = ((g.start_y+85)/g.yres)+25;
-    //int rows = 0;
-    //int cols = 0;    
-
-	//if (g.round1) {
-	//	rows = 3;
-	//	cols = 4;
+  
 		for (int i = 0; i < row; i++) {
 			for (int j = 0; j < col; j++) {
 				if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
@@ -1852,38 +1847,12 @@ void flipCard(int mx, int my, int row, int col)
 			}
 		}
 	//}
-   /* 
-    if (g.round2) {
-		rows = 4;
-		cols = 4;
-		for (int i = 0; i < rows; i++) {
-			for (int j = 0; j < cols; j++) {
-				if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
-						&& my < y+(130 * i)+120)
-				{
-					g.cards[i][j].flip = 1;     
-                }
-			}
-		}
-	}
-    
-    
-    if (g.round3) {
-		rows = 5;
-		cols = 5;
-		for (int i = 0; i < rows; i++) {
-			for (int j = 0; j < cols; j++) {
-				if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
-						&& my < y+(130 * i)+120)
-				{
-			        g.cards[i][j].flip = 1;     
-                }
-			}
-		}
-	}
-   */
+  
     
     /*
+    	int rows = 0;
+	int cols = 0;
+	
  	if (g.round1) {
 		rows = 3;
 		cols = 4;
