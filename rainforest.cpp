@@ -68,7 +68,7 @@ extern void show_mckays_credits(int, int);
 extern void show_dat_credits(int, int);
 extern void show_steven_credits(int, int);
 extern void show_clementes_credits(int, int);
-void flipCard(int mx, int my);
+void flipCard(int mx, int my,int,int);
 void drawCardFront(int row, int col, float w);
 
 class Image {
@@ -136,13 +136,17 @@ Image img[9] = {
 "./images/Menu.jpg",
 };
 
-Image card[6] = {
+Image card[10] = {
 "./cards/c1.jpg",
 "./cards/c2.jpg",
 "./cards/c3.png",
 "./cards/c4.png",
 "./cards/c5.jpg",
 "./cards/c6.png",
+"./cards/c7.jpg",
+"./cards/c8.jpg",
+"./cards/c9.png",
+"./cards/c10.jpg",
 };
 
 class Global {
@@ -166,6 +170,10 @@ public:
     GLuint card4Texture;
     GLuint card5Texture;
     GLuint card6Texture;
+    GLuint card7Texture;
+    GLuint card8Texture;
+    GLuint card9Texture;
+    GLuint card10Texture; 
     int showBigfoot;
 	int witch;
     int forest;
@@ -176,7 +184,7 @@ public:
 	int deflection;
 	int show_credits;
     int round1, round2, round3;
-	int flipped;
+	//int flipped;
 	int Startscreen;
 	// int flippedTwo;
 	int lrbutton;
@@ -186,12 +194,13 @@ public:
     float start_y;
     struct Card {
         int id;
-        //int flipped = 0;
+        int flip = 0;
+        int match = 0;
         float xbox;
         float ybox;
-        float wbox;
-        float hbox;
-    } cards[3][4];
+        float wbox = 45.0f; //card width
+        float hbox = 60.0f; //card height
+    } cards[4][5];
     
     Global() {
 		logOpen();
@@ -208,27 +217,40 @@ public:
         show_credits=0;
         round1=round2=round3=0;
 	    witch=0;
-		flipped = 0;
+		//flipped = 0;
 		// flippedTwo = 0;
 		cardRow = 0;
 		cardCol = 0;
 		Startscreen = 1;
 		lrbutton = 0; 
-        
+        round1 = 0; 
         //Dat
         //starting pts  
-	    start_x = xres/2;
-	    start_y = yres-85;    
-         
-        for (int i=0; i<3; i++) {
+	    start_x = 100; //65
+	    start_y = yres-75;    
+        //if (round1) { 
+        /*for (int i=0; i<3; i++) {
             for (int j=0; j<4; j++) {
                 cards[i][j].xbox = start_x + (j*100.0f);
                 cards[i][j].ybox = start_y - (i*130.0f);
-                cards[i][j].wbox = 45.0f;
-                cards[i][j].hbox = 60.0f;
-            }
+           }
         }
-    
+        //}
+        
+        for (int i=0; i<4; i++) {
+            for (int j=0; j<4; j++) {
+                cards2[i][j].xbox = start_x + (j*100.0f);
+                cards2[i][j].ybox = start_y - (i*130.0f);
+           }
+        }
+
+        for (int i=0; i<4; i++) {
+            for (int j=0; j<5; j++) {
+                cards3[i][j].xbox = start_x + (j*100.0f);
+                cards3[i][j].ybox = start_y - (i*130.0f);
+           }
+        } */
+
     }
 	~Global() {
 		logClose();
@@ -588,11 +610,15 @@ void initOpengl(void)
 	glGenTextures(1, &g.card4Texture); 
 	glGenTextures(1, &g.card5Texture); 
 	glGenTextures(1, &g.card6Texture); 
+	glGenTextures(1, &g.card7Texture); 
+	glGenTextures(1, &g.card8Texture); 
+	glGenTextures(1, &g.card9Texture); 
+	glGenTextures(1, &g.card10Texture); 
 
     //-------------------------------------------------------------------------
 	//card1
-	//
-	
+	//	
+
     int w9 = card[0].width;
 	int h9 = card[0].height;
 	//
@@ -678,6 +704,67 @@ void initOpengl(void)
 	glTexImage2D(GL_TEXTURE_2D, 0, 3, w9, h9, 0,
 		GL_RGB, GL_UNSIGNED_BYTE, card[5].data); 
     glBindTexture(GL_TEXTURE_2D, 0); 
+    
+    //-------------------------------------------------------------------------
+	//card7
+	//
+	
+    w9 = card[6].width;
+	h9 = card[6].height;
+	//
+	glBindTexture(GL_TEXTURE_2D, g.card7Texture);
+	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, w9, h9, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, card[6].data); 
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    //-------------------------------------------------------------------------
+	//card8
+	//
+	
+    w9 = card[7].width;
+    h9 = card[7].height;
+	//
+	glBindTexture(GL_TEXTURE_2D, g.card8Texture);
+	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, w9, h9, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, card[7].data); 
+    glBindTexture(GL_TEXTURE_2D, 0);
+ 
+    //-------------------------------------------------------------------------
+	//card9
+	//
+	
+    w9 = card[8].width;
+	h9 = card[8].height;
+	//
+	glBindTexture(GL_TEXTURE_2D, g.card9Texture);
+	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, w9, h9, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, card[8].data); 
+    glBindTexture(GL_TEXTURE_2D, 0);
+ 
+    //-------------------------------------------------------------------------
+	//card10
+	//
+    w9 = card[9].width;
+	h9 = card[9].height;
+	//
+	glBindTexture(GL_TEXTURE_2D, g.card10Texture);
+	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, w9, h9, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, card[9].data); 
+    glBindTexture(GL_TEXTURE_2D, 0); 
+
+
 
 	//-------------------------------------------------------------------------
 	//Startscreen
@@ -896,8 +983,14 @@ void mouse_click(int action)
 			button.click = 1;
 			g.Startscreen ^= 1;
 			g.round1 ^= 1;
-			g.flipped = 0;
-		}
+			//resetting cards
+		    for (int i=0; i<4; i++) {
+                for (int j=0; j<5; j++) {
+                    g.cards[i][j].flip = 0; 
+                    g.cards[i][j].match = 0;
+                }
+            }
+        }
 	}		
 
 }
@@ -926,8 +1019,15 @@ void checkMouse(XEvent *e)
 		if (e->xbutton.button==1) {
 			//Left button is down
 			g.lrbutton = 1;
-			flipCard(mx, my);
-			// drawCardFront(0, 0, 45.0);
+			//flipCard(mx,my);
+            if (g.round1)
+                flipCard(mx,my,3,4);
+			if (g.round2)
+                flipCard(mx,my,4,4);
+            if (g.round3)
+                flipCard(mx,my,4,5);
+
+            // drawCardFront(0, 0, 45.0);
 		}
 		if (e->xbutton.button==3) {
 			//Right button is down
@@ -972,17 +1072,37 @@ int checkKeys(XEvent *e)
 	}
 	switch (key) {
         case XK_1:
-            g.round2 = g.round3 = g.flipped =0;
+            //resetting cards
+            for (int i=0; i<4; i++) {
+                for (int j=0; j<5; j++) {
+                    g.cards[i][j].flip = 0; 
+                    g.cards[i][j].match = 0;
+                }
+            } 
+            g.round2 = g.round3 = g.witch = g.showBigfoot = 0;
+            //g.flipped = 0;  
 			g.Startscreen ^= 1;
             g.round1 ^= 1;
             break;
         case XK_2:
-            g.round1 = g.round3 = g.flipped =0;
+            for (int i=0; i<4; i++) {
+                for (int j=0; j<5; j++) {
+                    g.cards[i][j].flip = 0; 
+                    g.cards[i][j].match = 0;
+                }
+            } 
+            g.round1 = g.round3 = g.witch = g.showBigfoot = 0;
 			g.Startscreen ^= 1;
             g.round2 ^= 1;
             break;
         case XK_3:
-            g.round1 = g.round2 = g.flipped = 0;
+            for (int i=0; i<4; i++) {
+                for (int j=0; j<5; j++) {
+                    g.cards[i][j].flip = 0; 
+                    g.cards[i][j].match = 0;
+                }
+            } 
+            g.round1 = g.round2 = g.witch = g.showBigfoot = 0;
 			g.Startscreen ^= 1;
             g.round3 ^= 1;
             break; 
@@ -992,7 +1112,7 @@ int checkKeys(XEvent *e)
 		case XK_b:
 			g.showBigfoot ^= 1;
 			if (g.showBigfoot) {
-				bigfoot.pos[0] = -250.0;
+				bigfoot.pos[0] = g.xres+65;
 			}
 			break;
 	    case XK_6:
@@ -1173,6 +1293,7 @@ void moveBigfoot()
 	//Gravity?
 	if (addgrav)
 		bigfoot.vel[1] -= 0.75;
+
 }
 
 
@@ -1377,25 +1498,24 @@ void drawRaindrops()
 	glLineWidth(1);
 }
 
-void round1Match() {
-    int array[3][4] =  {{1,6,2,6},
-                        {5,4,3,6},
-                        {2,3,4,1}};
-    if (g.flipped == 1) {
-
+//Dat
+void makeCards(int row, int col) {
+    for (int i=0; i<row; i++) {
+        for (int j=0; j<col; j++) {
+            g.cards[i][j].xbox = g.start_x + (j*100.0f);
+            g.cards[i][j].ybox = g.start_y - (i*130.0f);
+        }
     } 
 }
 
-
-
 //Dat
-void round1Card(int row,int col, GLuint texture) 
+void drawCard(int row,int col, GLuint texture) 
 {
     glPushMatrix();
     glTranslatef(g.cards[row][col].xbox, g.cards[row][col].ybox, 0.0f);
 			
     glBindTexture(GL_TEXTURE_2D, texture);
-	glBegin(GL_QUADS);    
+    glBegin(GL_QUADS);    
         glTexCoord2f(0.0f, 1.0f); 
         glVertex2f(-g.cards[row][col].wbox, -g.cards[row][col].hbox);
         glTexCoord2f(0.0f, 0.0f); 
@@ -1408,31 +1528,363 @@ void round1Card(int row,int col, GLuint texture)
     glPopMatrix();
 }
 
+//Dat
+void pickCard(int i, int j)
+{
+    switch (i) {
+        //row1
+        case 0:
+            switch (j) {
+                case 0:
+                    drawCard(i,j,g.card1Texture);
+                    break;
+                case 1:
+                    drawCard(i,j,g.card5Texture);
+                    break;
+                case 2:
+                    drawCard(i,j,g.card2Texture);
+                    break;
+                case 3:
+                    drawCard(i,j,g.card6Texture);
+                    break;
+            }
+            break;
+        //row2
+        case 1: 
+            switch (j) {
+                case 0:
+                    drawCard(i,j,g.card5Texture);
+                    break;
+                case 1:
+                    drawCard(i,j,g.card4Texture);
+                    break;
+                case 2:
+                    drawCard(i,j,g.card3Texture);
+                    break;
+                case 3:
+                    drawCard(i,j,g.card6Texture);
+                    break;
+            }
+            break;
+        //row3
+        case 2:
+            switch (j) {
+                case 0:
+                    drawCard(i,j,g.card2Texture);
+                    break;
+                case 1:
+                    drawCard(i,j,g.card3Texture);
+                    break;
+                case 2:
+                    drawCard(i,j,g.card4Texture);
+                    break;
+                case 3:
+                    drawCard(i,j,g.card1Texture);
+                    break;
+            }
+            break;
+    }
+}
 
+//Dat
+void pickCard2(int i, int j)
+{
+    switch (i) {
+        //row1
+        case 0:
+            switch (j) {
+                case 0:
+                    drawCard(i,j,g.card8Texture);
+                    break;
+                case 1:
+                    drawCard(i,j,g.card7Texture);
+                    break;
+                case 2:
+                    drawCard(i,j,g.card2Texture);
+                    break;
+                case 3:
+                    drawCard(i,j,g.card6Texture);
+                    break;
+            }
+            break;
+        //row2
+        case 1: 
+            switch (j) {
+                case 0:
+                    drawCard(i,j,g.card1Texture);
+                    break;
+                case 1:
+                    drawCard(i,j,g.card7Texture);
+                    break;
+                case 2:
+                    drawCard(i,j,g.card3Texture);
+                    break;
+                case 3:
+                    drawCard(i,j,g.card3Texture);
+                    break;
+            }
+            break;
+        
+        //row3
+        case 2:
+            switch (j) {
+                case 0:
+                    drawCard(i,j,g.card1Texture);
+                    break;
+                case 1:
+                    drawCard(i,j,g.card4Texture);
+                    break;
+                case 2:
+                    drawCard(i,j,g.card6Texture);
+                    break;
+                case 3:
+                    drawCard(i,j,g.card4Texture);
+                    break;
+            }
+            break;
+        //row4
+        case 3:
+            switch (j) {
+                case 0:
+                    drawCard(i,j,g.card2Texture);
+                    break;
+                case 1:
+                    drawCard(i,j,g.card5Texture);
+                    break;
+                case 2:
+                    drawCard(i,j,g.card8Texture);
+                    break;
+                case 3:
+                    drawCard(i,j,g.card5Texture);
+                    break;
+            }
+            break;
+        }
+}
+
+//Dat
+void pickCard3(int i, int j)
+{
+    switch (i) {
+        //row1
+        case 0:
+            switch (j) {
+                case 0:
+                    drawCard(i,j,g.card7Texture);
+                    break;
+                case 1:
+                    drawCard(i,j,g.card5Texture);
+                    break;
+                case 2:
+                    drawCard(i,j,g.card4Texture);
+                    break;
+                case 3:
+                    drawCard(i,j,g.card2Texture);
+                    break;
+                case 4:
+                    drawCard(i,j,g.card3Texture);
+                    break;
+            }
+            break;
+        //row2
+        case 1: 
+            switch (j) {
+                case 0:
+                    drawCard(i,j,g.card6Texture);
+                    break;
+                case 1:
+                    drawCard(i,j,g.card1Texture);
+                    break;
+                case 2:
+                    drawCard(i,j,g.card9Texture);
+                    break;
+                case 3:
+                    drawCard(i,j,g.card3Texture);
+                    break;
+                case 4:
+                    drawCard(i,j,g.card1Texture);
+                    break; 
+            }
+            break;
+        //row3
+        case 2:
+            switch (j) {
+                case 0:
+                    drawCard(i,j,g.card10Texture);
+                    break;
+                case 1:
+                    drawCard(i,j,g.card9Texture);
+                    break;
+                case 2:
+                    drawCard(i,j,g.card2Texture);
+                    break;
+                case 3:
+                    drawCard(i,j,g.card4Texture);
+                    break;
+                case 4:
+                    drawCard(i,j,g.card5Texture);
+                    break;
+            }
+            break;
+        //row4
+        case 3:
+            switch (j) {
+                case 0:
+                    drawCard(i,j,g.card10Texture);
+                    break;
+                case 1:
+                    drawCard(i,j,g.card8Texture);
+                    break;
+                case 2:
+                    drawCard(i,j,g.card8Texture);
+                    break;
+                case 3:
+                    drawCard(i,j,g.card6Texture);
+                    break;
+                case 4:
+                    drawCard(i,j,g.card7Texture);
+                    break;
+            }
+            break;
+    }
+}
 
 //Dat Pham
-void drawCardBack(int row, int col)
+void drawBack(int row, int col)
 {
 	for (int i=0; i<row; i++) {
 		for (int j=0; j<col; j++) {	
-            round1Card(i,j,g.cardTexture);
+            if (g.cards[i][j].match == 0) {      
+                drawCard(i,j,g.cardTexture);
+            }
         }
 	}        
 }
 
+//Dat
+void playCards(int row, int col)
+{
+    int prev_i, prev_j, prev_id; //remember previous card
+    int compare = 0;
+
+    for (int i=0; i<row; i++) {
+        for (int j=0; j<col; j++) {
+            if (g.cards[i][j].flip == 1 && g.cards[i][j].match == 0) {
+                //choosing card pack
+                if (g.round1)     
+                    pickCard(i,j);              
+                if (g.round2) 
+                    pickCard2(i,j);
+                if (g.round3)
+                    pickCard3(i,j);
+                compare++;
+                
+                //saving prev card info
+                if (compare == 1) {
+                    prev_i = i;
+                    prev_j = j;
+                    prev_id = g.cards[i][j].id;
+                } 
+                
+                //does the pair of cards match?
+                if (compare == 2) {
+                    if (prev_id == g.cards[i][j].id) {
+                        g.cards[i][j].match = 1;
+                        g.cards[prev_i][prev_j].match = 1;
+                        compare = 0;
+                        break;
+                    }
+                        
+                    g.cards[i][j].flip = 0;
+                    g.cards[prev_i][prev_j].flip = 0; 
+                    compare = 0; 
+                    break; 
+                } 
+            }
+        }
+    }
+     
+    
+    //print win/lose message
+    int count = 0;
+    for (int i=0; i<row; i++) {
+        for (int j=0; j<col; j++) {
+            if (g.cards[i][j].match == 1) 
+                count++;
+        }
+    }
+    
+    Rect r; 
+    r.bot = g.yres-150;
+    r.left = g.xres/2-50;
+    r.center = 0;
+	        
+    if (count == row*col) {
+        g.witch =1;
+        //g.showBigfoot =1;
+        ggprint16(&r, 0, 0x00000000, "YOU WIN!!! <3");
+    } 
+}
+
+
 
 //McKay Russell
 //inputs: mouse x coordinate, mouse y coordinate
-void flipCard(int mx, int my)
+void flipCard(int mx, int my, int row, int col)
 {
 	//float x = g.xres/2 - 40;
 	//float y = 25;
 	float x = g.start_x-40; 
     float y = ((g.start_y+85)/g.yres)+25;
-    int rows = 0;
-    int cols = 0;    
+    //int rows = 0;
+    //int cols = 0;    
 
-	if (g.round1) {
+	//if (g.round1) {
+	//	rows = 3;
+	//	cols = 4;
+		for (int i = 0; i < row; i++) {
+			for (int j = 0; j < col; j++) {
+				if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
+						&& my < y+(130 * i)+120)
+				{
+                    g.cards[i][j].flip = 1;     
+                }
+			}
+		}
+	//}
+   /* 
+    if (g.round2) {
+		rows = 4;
+		cols = 4;
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < cols; j++) {
+				if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
+						&& my < y+(130 * i)+120)
+				{
+					g.cards[i][j].flip = 1;     
+                }
+			}
+		}
+	}
+    
+    
+    if (g.round3) {
+		rows = 5;
+		cols = 5;
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < cols; j++) {
+				if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
+						&& my < y+(130 * i)+120)
+				{
+			        g.cards[i][j].flip = 1;     
+                }
+			}
+		}
+	}
+   */
+    
+    /*
+ 	if (g.round1) {
 		rows = 3;
 		cols = 4;
 		for (int i = 0; i < rows; i++) {
@@ -1442,7 +1894,7 @@ void flipCard(int mx, int my)
 				{
                     g.cardRow = i;
 					g.cardCol = j;
-					g.flipped ^= 1;
+					g.flipped = 1; 
                 }
 			}
 		}
@@ -1479,14 +1931,13 @@ void flipCard(int mx, int my)
 			}
 		}
 	}
-   
-}
-
+    */
+}  
 
 void render()
 {
     Rect r;
-
+       
     //Clear the screen
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -1504,6 +1955,146 @@ void render()
 	// 		glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
 	// 	glEnd(); 
 	// }
+    if (g.round1) {
+		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
+		glBegin(GL_QUADS);
+			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
+			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
+			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
+			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
+		glEnd(); 
+		glPopMatrix();
+        
+        // grid 3x4 [[1,5,2,6]
+        //           [5,4,3,6]
+        //           [2,3,4,1]]
+     
+        //set up card id
+        g.cards[0][0].id = 1;    
+        g.cards[0][1].id = 5;    
+        g.cards[0][2].id = 2;               
+        g.cards[0][3].id = 6;               
+              
+        g.cards[1][0].id = 5;    
+        g.cards[1][1].id = 4;    
+        g.cards[1][2].id = 3;               
+        g.cards[1][3].id = 6;               
+               
+        g.cards[2][0].id = 2;    
+        g.cards[2][1].id = 3;    
+        g.cards[2][2].id = 4;               
+        g.cards[2][3].id = 1;                 
+    
+        makeCards(3,4);
+        drawBack(3,4);   
+		playCards(3,4);
+       
+        unsigned int c = 0x00ffff44;
+		r.bot = g.yres - 60;
+		r.left = 250;
+		r.center = 0;
+		int h = 12;
+		ggprint16(&r, h, c, "Press 2 for Menu");
+
+   	}
+    
+    if (g.round2) {
+		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
+		glBegin(GL_QUADS);
+			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
+			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
+			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
+			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
+		glEnd(); 
+        
+        // grid 4x4 [[8,7,2,6]
+        //           [1,7,3,3]
+        //           [1,4,6,4]
+        //           [2,5,8,5]]
+        
+        //set up card id
+        g.cards[0][0].id = 8;    
+        g.cards[0][1].id = 7;    
+        g.cards[0][2].id = 2;               
+        g.cards[0][3].id = 6;               
+              
+        g.cards[1][0].id = 1;    
+        g.cards[1][1].id = 7;    
+        g.cards[1][2].id = 3;               
+        g.cards[1][3].id = 3;               
+               
+        g.cards[2][0].id = 1;    
+        g.cards[2][1].id = 4;    
+        g.cards[2][2].id = 6;               
+        g.cards[2][3].id = 4;                 
+    
+        g.cards[3][0].id = 2;    
+        g.cards[3][1].id = 5;    
+        g.cards[3][2].id = 8;               
+        g.cards[3][3].id = 5;                 
+
+        makeCards(4,4); 
+        drawBack(4,4);
+        playCards(4,4);    
+		
+        unsigned int c = 0x00ffff44;
+		r.bot = g.yres - 60;
+		r.left = 250;
+		r.center = 0;
+		int h = 12;
+		ggprint16(&r, h, c, "Press 2 for Menu");
+	}
+    
+    if (g.round3) {
+		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
+		glBegin(GL_QUADS);
+			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
+			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
+			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
+			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
+		glEnd(); 
+        
+        // grid 4x5 [[ 7,5,4,2,3]
+        //           [ 6,1,9,3,1]
+        //           [10,9,2,4,5]
+        //           [10,8,8,6,7]]
+        
+        //set up card id
+        g.cards[0][0].id = 7;    
+        g.cards[0][1].id = 5;    
+        g.cards[0][2].id = 4;               
+        g.cards[0][3].id = 2;               
+        g.cards[0][4].id = 3;               
+              
+        g.cards[1][0].id = 6;    
+        g.cards[1][1].id = 1;    
+        g.cards[1][2].id = 9;               
+        g.cards[1][3].id = 3;               
+        g.cards[1][4].id = 1;               
+           
+        g.cards[2][0].id = 10;    
+        g.cards[2][1].id = 9;    
+        g.cards[2][2].id = 2;               
+        g.cards[2][3].id = 4;                 
+        g.cards[2][4].id = 5;               
+  
+        g.cards[3][0].id = 10;    
+        g.cards[3][1].id = 8;    
+        g.cards[3][2].id = 8;               
+        g.cards[3][3].id = 6;                 
+        g.cards[3][4].id = 7;               
+ 
+        makeCards(4,5);
+        drawBack(4,5);	
+		playCards(4,5); 
+        
+        unsigned int c = 0x00ffff44;
+		r.bot = g.yres - 60;
+		r.left = 250;
+		r.center = 0;
+		int h = 12;
+		ggprint16(&r, h, c, "Press 3 for Menu");
+	}
 
     if (g.showBigfoot) {
 		glPushMatrix();
@@ -1543,9 +2134,10 @@ void render()
 		glDisable(GL_ALPHA_TEST);
 	}
 
+
     if (g.witch) {
 		glPushMatrix();
-		glTranslatef(witch.pos[0], witch.pos[1], witch.pos[2]);
+		glTranslatef(witch.pos[0], witch.pos[1]+350, witch.pos[2]);
 		
         if (!g.silhouette) {
 			glBindTexture(GL_TEXTURE_2D, g.witchTexture);
@@ -1584,127 +2176,10 @@ void render()
 	}
 
 
-    if (g.round1) {
-		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
-			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
-			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
-			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
-		glEnd(); 
-		glPopMatrix();
-
-        drawCardBack(3,4);	
-		unsigned int c = 0x00ffff44;
-		r.bot = g.yres - 60;
-		r.left = 250;
-		r.center = 0;
-		int h = 12;
-		ggprint16(&r, h, c, "Press 1 for Menu");
-	}
     
-    if (g.round2) {
-		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
-			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
-			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
-			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
-		glEnd(); 
-        drawCardBack(4,4);	
-		unsigned int c = 0x00ffff44;
-		r.bot = g.yres - 60;
-		r.left = 250;
-		r.center = 0;
-		int h = 12;
-		ggprint16(&r, h, c, "Press 2 for Menu");
-	}
-    
-    if (g.round3) {
-		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
-			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
-			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
-			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
-		glEnd(); 
-        drawCardBack(5,5);	
-		unsigned int c = 0x00ffff44;
-		r.bot = g.yres - 60;
-		r.left = 250;
-		r.center = 0;
-		int h = 12;
-		ggprint16(&r, h, c, "Press 3 for Menu");
-	}
-
+/*
 	if (g.flipped == 1) {
-        //3x4 cards (round1) 
-        //row1
-        if (g.cardRow == 0 && g.cardCol == 0) {
-            g.cards[g.cardRow][g.cardCol].id = 1;
-            round1Card(g.cardRow,g.cardCol,g.card1Texture);
-        }
-
-        if (g.cardRow == 0 && g.cardCol == 1) {
-            g.cards[g.cardRow][g.cardCol].id = 6;
-            round1Card(g.cardRow,g.cardCol,g.card6Texture);
-        }
-
-            
-        if (g.cardRow == 0 && g.cardCol == 2) {
-            g.cards[g.cardRow][g.cardCol].id = 2;
-            round1Card(g.cardRow,g.cardCol,g.card2Texture);
-        }
-
-        if (g.cardRow == 0 && g.cardCol == 3) {
-            g.cards[g.cardRow][g.cardCol].id = 6;
-            round1Card(g.cardRow,g.cardCol,g.card6Texture);
-        }
-        
-        //row2
-        if (g.cardRow == 1 && g.cardCol == 0) {
-            g.cards[g.cardRow][g.cardCol].id = 5;
-            round1Card(g.cardRow,g.cardCol,g.card5Texture);
-        }
-        
-        if (g.cardRow == 1 && g.cardCol == 1) {
-            g.cards[g.cardRow][g.cardCol].id = 4;
-            round1Card(g.cardRow,g.cardCol,g.card4Texture);
-        }
-        
-        if (g.cardRow == 1 && g.cardCol == 2) {
-            g.cards[g.cardRow][g.cardCol].id = 3;
-            round1Card(g.cardRow,g.cardCol,g.card3Texture);
-        }
-
-        if (g.cardRow == 1 && g.cardCol == 3) {
-            g.cards[g.cardRow][g.cardCol].id = 6;
-            round1Card(g.cardRow,g.cardCol,g.card6Texture);
-        }
-        //row3
-        if (g.cardRow == 2 && g.cardCol == 0) {
-            g.cards[g.cardRow][g.cardCol].id = 2;
-            round1Card(g.cardRow,g.cardCol,g.card2Texture);
-        }
-
-        if (g.cardRow == 2 && g.cardCol == 1) {
-            g.cards[g.cardRow][g.cardCol].id = 3;
-            round1Card(g.cardRow,g.cardCol,g.card3Texture);
-        }
-
-        if (g.cardRow == 2 && g.cardCol == 2) {
-            g.cards[g.cardRow][g.cardCol].id = 4;
-            round1Card(g.cardRow,g.cardCol,g.card4Texture);
-        }
-
-
-        if (g.cardRow == 2 && g.cardCol == 3) {
-            g.cards[g.cardRow][g.cardCol].id = 1;
-            round1Card(g.cardRow,g.cardCol,g.card1Texture);
-        }
-
-
-        /*
+    
 		float x = g.xres/2;
 		float y = g.yres-100.0;
 		int w = 45.0;
@@ -1718,9 +2193,9 @@ void render()
 			glTexCoord2f(1.0f, 0.0f); glVertex2i( w, w+30);
 			glTexCoord2f(1.0f, 1.0f); glVertex2i( w,-w);
 		glEnd();
-		glPopMatrix();  */ 
-	}
-
+		glPopMatrix();  
+    } 
+*/
 	if (g.Startscreen){
 		glBindTexture(GL_TEXTURE_2D, g.StartTexture);
 		glBegin(GL_QUADS);
@@ -1747,7 +2222,17 @@ void render()
 		ggprint8b(&r, h, c, "D - Deflection");
 		ggprint8b(&r, h, c, "N - Sounds");
 		ggprint8b(&r, h, 0x00ff0000, "Press c for credits");
-
+  /*      
+        Rect y; 
+        c = 0x00ffffff;    
+        y.bot = g.yres-150;
+        y.left = g.xres/2-50;
+        y.center = 0;
+        h = 0;
+	        
+        ggprint16(&y, h, c, "YOU WIN!!! <3");
+   
+*/
 		// Draw Buttons
 		if (button.over) {
 			glColor3f(1.0f, 0.0f, 0.0f);
