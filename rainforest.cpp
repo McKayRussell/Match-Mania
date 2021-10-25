@@ -259,8 +259,7 @@ public:
 } g;
 //
 /* ADDED FOR BUTTON */
-class t_button {
-public:
+typedef struct t_button {
 	Rect r;
 	char text[32];
 	int over;
@@ -269,7 +268,9 @@ public:
 	float color[3];
 	float dcolor[3];
 	unsigned int text_color;
-} button;
+} Button;
+Button button [3];
+int buttonNum = 0;
 
 class Witch {
 public:
@@ -952,46 +953,109 @@ void init() {
 	MakeVector(6.0,0.0,0.0, witch.vel);
 
 	//initialize buttons...
-	button.r.width = 200;
-	button.r.height = 100;
-	button.r.left = g.xres/2 - button.r.width/2;
-	button.r.bot = 50;
-	button.r.right =
-		button.r.left + button.r.width;
-	button.r.top = button.r.bot + button.r.height;
-	button.r.centerx =
-		(button.r.left + button.r.right) / 2;
-	button.r.centery =
-		(button.r.bot + button.r.top) / 2;
-	strcpy(button.text, "Press to Play");
-	button.down = 0;
-	button.click = 0;
-	button.color[0] = 0.4f;
-	button.color[1] = 0.4f;
-	button.color[2] = 0.7f;
-	button.dcolor[0] = button.color[0] * 0.5f;
-	button.dcolor[1] = button.color[1] * 0.5f;
-	button.dcolor[2] = button.color[2] * 0.5f;
-	button.text_color = 0x00ffffff;
+	buttonNum = 0;
+
+	// Round 1 Button position
+	button[buttonNum].r.width = 200;
+	button[buttonNum].r.height = 100;
+	button[buttonNum].r.left = 100;
+	button[buttonNum].r.bot = 30;
+	button[buttonNum].r.right =
+		button[buttonNum].r.left + button[buttonNum].r.width;
+	button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
+	button[buttonNum].r.centerx =
+		(button[buttonNum].r.left + button[buttonNum].r.right) / 2;
+	button[buttonNum].r.centery =
+		(button[buttonNum].r.bot + button[buttonNum].r.top) / 2;
+	strcpy(button[buttonNum].text, "Easy: Round 1");
+	button[buttonNum].down = 0;
+	button[buttonNum].click = 0;
+	button[buttonNum].color[0] = 1.0f;
+	button[buttonNum].color[1] = 1.0f;
+	button[buttonNum].color[2] = 1.0f;
+	button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
+	button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
+	button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
+	button[buttonNum].text_color = 0x00ffffff;
+	buttonNum++;
+
+	// Round 2 Button position
+	button[buttonNum].r.width = 200;
+	button[buttonNum].r.height = 100;
+	button[buttonNum].r.left = 450;
+	button[buttonNum].r.bot = 30;
+	button[buttonNum].r.right =
+		button[buttonNum].r.left + button[buttonNum].r.width;
+	button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
+	button[buttonNum].r.centerx =
+		(button[buttonNum].r.left + button[buttonNum].r.right) / 2;
+	button[buttonNum].r.centery =
+		(button[buttonNum].r.bot + button[buttonNum].r.top) / 2;
+	strcpy(button[buttonNum].text, "Medium: Round 2");
+	button[buttonNum].down = 0;
+	button[buttonNum].click = 0;
+	button[buttonNum].color[0] = 1.0f;
+	button[buttonNum].color[1] = 0.5f;
+	button[buttonNum].color[2] = 0.0f;
+	button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
+	button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
+	button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
+	button[buttonNum].text_color = 0x00ffffff;
+	buttonNum++;
+
+	// Round 3 Button position
+	button[buttonNum].r.width = 200;
+	button[buttonNum].r.height = 100;
+	button[buttonNum].r.left = 800;
+	button[buttonNum].r.bot = 30;
+	button[buttonNum].r.right =
+		button[buttonNum].r.left + button[buttonNum].r.width;
+	button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
+	button[buttonNum].r.centerx =
+		(button[buttonNum].r.left + button[buttonNum].r.right) / 2;
+	button[buttonNum].r.centery =
+		(button[buttonNum].r.bot + button[buttonNum].r.top) / 2;
+	strcpy(button[buttonNum].text, "Hard: Round 3");
+	button[buttonNum].down = 0;
+	button[buttonNum].click = 0;
+	button[buttonNum].color[0] = 0.5f;
+	button[buttonNum].color[1] = 0.3f;
+	button[buttonNum].color[2] = 0.9f;
+	button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
+	button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
+	button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
+	button[buttonNum].text_color = 0x00ffffff;
+	buttonNum++;
 
 }
 // Mouse Button Clicked
 void mouse_click(int action)
 {
-	if (action == 1) {
-		if (button.over) {
-			button.down = 1;
-			button.click = 1;
-			g.Startscreen ^= 1;
-			g.round1 ^= 1;
-			//resetting cards
-		    for (int i=0; i<4; i++) {
-                for (int j=0; j<5; j++) {
-                    g.cards[i][j].flip = 0; 
-                    g.cards[i][j].match = 0;
-                }
-            }
-        }
+	for (int i = 0; i < buttonNum; i++){
+		if (action == 1) {
+			if (button[i].over) {
+				button[i].down = 1;
+				button[i].click = 1;
+				g.Startscreen ^= 1;
+				// go to round
+				if (i == 0){
+					g.round1 ^= 1;
+				}
+				if (i == 1){
+					g.round2 ^= 1;
+				}
+				if (i == 2){
+					g.round3 ^= 1;
+				}
+				//resetting cards
+				for (int i=0; i<4; i++) {
+					for (int j=0; j<5; j++) {
+						g.cards[i][j].flip = 0; 
+						g.cards[i][j].match = 0;
+					}
+				}
+			}
+		}
 	}		
 
 }
@@ -1044,12 +1108,16 @@ void checkMouse(XEvent *e)
 	}
 
 	// is mouse over square?
-	button.over = 0;
-	if (savex >= button.r.left &&
-		savex <= button.r.right &&
-		savey >= button.r.bot &&
-		savey <= button.r.top) {
-			button.over = 1;
+	for (int i = 0; i < buttonNum; i++){
+		button[i].over = 0;
+		button[i].down = 0;
+		if (savex >= button[i].r.left &&
+			savex <= button[i].r.right &&
+			savey >= button[i].r.bot &&
+			savey <= button[i].r.top) {
+				button[i].over = 1;
+				break;
+		}
 	}
 	if (g.lrbutton)
 		mouse_click(1);
@@ -2118,6 +2186,42 @@ void render()
 			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
 			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
 		glEnd();
+
+		// Draw Buttons
+		for (int i=0; i<buttonNum; i++) {
+			if (button[i].over) {
+				glColor3f(1.0f, 0.0f, 0.0f);
+				//draw a highlight around button
+				glLineWidth(2);
+				glBegin(GL_LINE_LOOP);
+					glVertex2i(button[i].r.left-2,  button[i].r.bot-2);
+					glVertex2i(button[i].r.left-2,  button[i].r.top+2);
+					glVertex2i(button[i].r.right+2, button[i].r.top+2);
+					glVertex2i(button[i].r.right+2, button[i].r.bot-2);
+					glVertex2i(button[i].r.left-2,  button[i].r.bot-2);
+				glEnd();
+				glLineWidth(1);
+			}
+			if (button[i].down) {
+				glColor3fv(button[i].dcolor);
+			} else {
+				glColor3fv(button[i].color);
+			}
+			glBegin(GL_QUADS);
+				glVertex2i(button[i].r.left,  button[i].r.bot);
+				glVertex2i(button[i].r.left,  button[i].r.top);
+				glVertex2i(button[i].r.right, button[i].r.top);
+				glVertex2i(button[i].r.right, button[i].r.bot);
+			glEnd();
+			r.left = button[i].r.centerx;
+			r.bot  = button[i].r.centery-8;
+			r.center = 1;
+			if (button[i].down) {
+				ggprint16(&r, 0, button[i].text_color, "Goodluck!");
+			} else {
+				ggprint16(&r, 0, button[i].text_color, button[i].text);
+			}
+		}
 		unsigned int c = 0x00ffff44;
 		r.bot = g.yres - 20;
 		r.left = 10;
@@ -2126,8 +2230,6 @@ void render()
 		ggprint8b(&r, h, c, "1 - Round 1");
 		ggprint8b(&r, h, c, "2 - Round 2");    
 		ggprint8b(&r, h, c, "3 - Round 3");
-		ggprint8b(&r, h, c, "6 - witch");
-		ggprint8b(&r, h, c, "B - Bigfoot");
 		ggprint8b(&r, h, c, "F - Forest");
 		ggprint8b(&r, h, c, "S - Silhouette");
 		ggprint8b(&r, h, c, "T - Trees");
@@ -2136,50 +2238,7 @@ void render()
 		ggprint8b(&r, h, c, "D - Deflection");
 		ggprint8b(&r, h, c, "N - Sounds");
 		ggprint8b(&r, h, 0x00ff0000, "Press c for credits");
-  /*      
-        Rect y; 
-        c = 0x00ffffff;    
-        y.bot = g.yres-150;
-        y.left = g.xres/2-50;
-        y.center = 0;
-        h = 0;
-	        
-        ggprint16(&y, h, c, "YOU WIN!!! <3");
-   
-*/
-		// Draw Buttons
-		if (button.over) {
-			glColor3f(1.0f, 0.0f, 0.0f);
-			//draw a highlight around button
-			glLineWidth(2);
-			glBegin(GL_LINE_LOOP);
-				glVertex2i(button.r.left-2,  button.r.bot-2);
-				glVertex2i(button.r.left-2,  button.r.top+2);
-				glVertex2i(button.r.right+2, button.r.top+2);
-				glVertex2i(button.r.right+2, button.r.bot-2);
-				glVertex2i(button.r.left-2,  button.r.bot-2);
-			glEnd();
-			glLineWidth(1);
-		}
-		if (button.down) {
-			glColor3fv(button.dcolor);
-		} else {
-			glColor3fv(button.color);
-		}
-		glBegin(GL_QUADS);
-			glVertex2i(button.r.left,  button.r.bot);
-			glVertex2i(button.r.left,  button.r.top);
-			glVertex2i(button.r.right, button.r.top);
-			glVertex2i(button.r.right, button.r.bot);
-		glEnd();
-		r.left = button.r.centerx;
-		r.bot  = button.r.centery-8;
-		r.center = 1;
-		if (button.down) {
-			ggprint16(&r, 0, button.text_color, "Pressed!");
-		} else {
-			ggprint16(&r, 0, button.text_color, button.text);
-		}
+		glPopMatrix();  
 	}
 
 	// if (g.flippedTwo == 1) {
@@ -2234,5 +2293,6 @@ void render()
 		drawUmbrella();
 	glBindTexture(GL_TEXTURE_2D, 0);
 	//
-}
+	}
+
 
