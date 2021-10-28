@@ -1,19 +1,6 @@
 //Dat Pham
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <time.h>
-#include <math.h>
-#include <X11/Xlib.h>
 #include <GL/glx.h>
-#include "log.h"
-//#include "ppm.h"
 #include "fonts.h"
-#include <iostream>
-#include <unistd.h>
-#include <bits/stdc++.h>
-
 
 void show_dat_credits(int x, int y)
 {
@@ -24,7 +11,7 @@ void show_dat_credits(int x, int y)
     ggprint16(&r, 16, 0x00000000, "Dat fat cat sat at a mat"); 
 
 }
-//GLuint texture;
+
 void drawBackground(int x, int y, GLuint texture) {
     glBindTexture(GL_TEXTURE_2D, texture);
     glBegin(GL_QUADS);
