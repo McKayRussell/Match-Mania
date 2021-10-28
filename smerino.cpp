@@ -7,20 +7,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <time.h>
-#include <math.h>
 #include <X11/Xlib.h>
-//#include <X11/Xutil.h>
-//#include <GL/gl.h>
-//#include <GL/glu.h>
-#include <X11/keysym.h>
 #include <GL/glx.h>
-#include "log.h"
-//#include "ppm.h"
 #include <iostream>
-#include <unistd.h>
-#include <bits/stdc++.h>
+
+
 
 // class Global {
 // public:
@@ -120,7 +111,8 @@ void initialize_buttons() {
 	button[buttonNum].text_color = 0x00ffffff;
 	buttonNum++;
 }
-void mouse_over_button(int action, int* menu, int* round1, int* round2, int* round3) {
+void mouse_over_button(int action, int* menu, int* round1, int* round2
+	, int* round3) {
 	for (int i = 0; i < buttonNum; i++){
 		if (action == 1) {
 			if (button[i].over) {
