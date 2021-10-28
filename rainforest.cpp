@@ -1976,19 +1976,11 @@ void render()
     int h = 25;
        
     if (g.round1) {
-		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
-			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
-			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
-			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
-		glEnd(); 
-		glPopMatrix();
-       
+	drawBackground(g.xres,g.yres,g.forestTexture);
         if (g.random == 1) {  
             //randomize cards
             random_shuffle(g.easy1, g.easy1 + 3*4);
-            
+          
             //set up card id (3x4 grid)
             int k = 0;
             for (int i=0; i<3; i++) {
