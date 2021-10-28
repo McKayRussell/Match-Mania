@@ -76,6 +76,8 @@ extern void mouse_over_button(int, int*, int*, int*, int*);
 extern void hover_button (int, int);
 extern void draw_buttons();
 extern void show_clementes_credits(int, int);
+//
+extern void drawBackground(int,int,GLuint);
 void flipCard(int mx, int my,int,int);
 void drawCardFront(int row, int col, float w);
 
