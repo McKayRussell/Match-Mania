@@ -1,4 +1,3 @@
-//3350
 //program: rainforest.cpp
 //author:  Gordon Griesel
 //date:    2013 to 2021
@@ -27,6 +26,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <bits/stdc++.h>
+#include "global.h"
 
 using namespace std;
 
@@ -67,19 +67,26 @@ void timeCopy(struct timespec *dest, struct timespec *source) {
 	memcpy(dest, source, sizeof(struct timespec));
 }
 //-----------------------------------------------------------------------------
-
+//
 extern void show_mckays_credits(int, int);
 extern void show_dat_credits(int, int);
 extern void show_steven_credits(int, int);
-extern void initialize_buttons();
-extern void mouse_over_button(int, int*, int*, int*, int*);
-extern void hover_button (int, int);
-extern void draw_buttons();
 extern void show_clementes_credits(int, int);
 //
-extern void drawBackground(int,int,GLuint);
-void flipCard(int mx, int my,int,int);
-void drawCardFront(int row, int col, float w);
+Card cards[5][8];   //declaring struct from header file
+extern void drawBackground(int,int,GLuint); 
+extern void makeCards(int,int,int,int); 
+extern void drawCard(int,int,GLuint); 
+extern void drawBack(int,int,GLuint,Card cards[][8]); 
+extern void matchPairs(int,int,Card cards[][8]);
+extern void matchTriplets(int,int,Card cards[][8]);
+extern void matchQuadruplets(int,int,Card cards[][8]);
+extern void randomHelper(int,int,int arr[]);
+
+extern void test(int,int,Card cards[][8]); //used for testing
+//
+void extern flipCard(int,int,int,int,float,float,int,Card cards[][8]);
+//void drawCardFront(int row, int col, float w);
 
 class Image {
 public:
@@ -193,13 +200,13 @@ public:
 	int showUmbrella;
 	int deflection;
 	int show_credits;
-    int round1, round2, round3, round4, round5, round6, round7, round8, round9;
+    int easy_r1, easy_r2, easy_r3, med_r1, med_r2, med_r3, hard_r1, hard_r2, hard_r3;
 	//int flipped;
 	int Startscreen;
 	// int flippedTwo;
 	int lrbutton;
-	int cardRow;
-	int cardCol;
+	//int cardRow;
+	//int cardCol;
     float start_x;
     float start_y;
     int random;
@@ -217,17 +224,7 @@ public:
     int hard1[4*5] = {1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5};
     int hard2[4*7] = {1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,6,6,6,6,7,7,7,7};
     int hard3[5*8] = {1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,6,6,6,6,7,7,7,7,8,8,8,8,
-                                                                    9,9,9,9,10,10,10,10};
-    struct Card {
-        int id;
-        int flip = 0;
-        int match = 0;
-        float xbox;
-        float ybox;
-        float wbox = 45.0f; //card width
-        float hbox = 60.0f; //card height
-    } cards[5][8];
-    
+                                                                    9,9,9,9,10,10,10,10}; 
     Global() {
 		logOpen();
 		done=0;
@@ -241,13 +238,12 @@ public:
 		showUmbrella=0;
 		deflection=0;
         show_credits=0;
-        round1=round2=round3=round4=round5=round6=round7=round8=round9=0;
-	    witch=0;
-		cardRow = 0;
-		cardCol = 0;
+	    easy_r1=easy_r2=easy_r3=med_r1=med_r2=med_r3=hard_r1=hard_r2=hard_r3=0;   
+        witch=0;
+		//cardRow = 0;
+		//cardCol = 0;
 		Startscreen = 1;
 		lrbutton = 0; 
-        round1 = 0;
         random = 0; 
         //starting pts of cards layout  
 	    start_x = 100; //65
@@ -259,19 +255,18 @@ public:
 } g;
 //
 /* ADDED FOR BUTTON */
-
-// typedef struct t_button {
-// 	Rect r;
-// 	char text[32];
-// 	int over;
-// 	int down;
-// 	int click;
-// 	float color[3];
-// 	float dcolor[3];
-// 	unsigned int text_color;
-// } Button;
-// Button button [3];
-// int buttonNum = 0;
+typedef struct t_button {
+	Rect r;
+	char text[32];
+	int over;
+	int down;
+	int click;
+	float color[3];
+	float dcolor[3];
+	unsigned int text_color;
+} Button;
+Button button [3];
+int buttonNum = 0;
 
 class Witch {
 public:
@@ -458,10 +453,10 @@ void init();
 void physics(void);
 void render(void);
 
-
+  
 int main()
-{
-	initOpengl();
+{   
+    initOpengl();
 	init();
 	clock_gettime(CLOCK_REALTIME, &timePause);
 	clock_gettime(CLOCK_REALTIME, &timeStart);
@@ -475,17 +470,7 @@ int main()
 			checkMouse(&e);
 			done = checkKeys(&e);
 		}
-		
-        //GLint timer;
-        //glGetIntegerv(GL_TIMESTAMP, &timer);
-        //printf("Milliseconds: %f\n", timer/1000000.0);
-        /*
-        timeprec = glutGet(GLUT_ELAPSED_TIME);
-        RenderScene(){time = glutGet(GLUT_ELAPSED_TIME);
-            timediff=time - timeprec;
-            timeprec=time;
-            angle += 360*(timediff/5000);
-        } */
+	             
         //time = glutGet(GLUT_ELAPSED_TIME);
         
         //
@@ -953,111 +938,109 @@ void init() {
     MakeVector(-150.0,180.0,0.0, witch.pos);
 	MakeVector(6.0,0.0,0.0, witch.vel);
 
-	// //initialize buttons...
-	// buttonNum = 0;
-	initialize_buttons();
-	// // Round 1 Button position
-	// button[buttonNum].r.width = 200;
-	// button[buttonNum].r.height = 100;
-	// button[buttonNum].r.left = 100;
-	// button[buttonNum].r.bot = 30;
-	// button[buttonNum].r.right =
-	// 	button[buttonNum].r.left + button[buttonNum].r.width;
-	// button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
-	// button[buttonNum].r.centerx =
-	// 	(button[buttonNum].r.left + button[buttonNum].r.right) / 2;
-	// button[buttonNum].r.centery =
-	// 	(button[buttonNum].r.bot + button[buttonNum].r.top) / 2;
-	// strcpy(button[buttonNum].text, "Easy: Round 1");
-	// button[buttonNum].down = 0;
-	// button[buttonNum].click = 0;
-	// button[buttonNum].color[0] = 1.0f;
-	// button[buttonNum].color[1] = 1.0f;
-	// button[buttonNum].color[2] = 1.0f;
-	// button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
-	// button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
-	// button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
-	// button[buttonNum].text_color = 0x00ffffff;
-	// buttonNum++;
+	//initialize buttons...
+	buttonNum = 0;
 
-	// // Round 2 Button position
-	// button[buttonNum].r.width = 200;
-	// button[buttonNum].r.height = 100;
-	// button[buttonNum].r.left = 450;
-	// button[buttonNum].r.bot = 30;
-	// button[buttonNum].r.right =
-	// 	button[buttonNum].r.left + button[buttonNum].r.width;
-	// button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
-	// button[buttonNum].r.centerx =
-	// 	(button[buttonNum].r.left + button[buttonNum].r.right) / 2;
-	// button[buttonNum].r.centery =
-	// 	(button[buttonNum].r.bot + button[buttonNum].r.top) / 2;
-	// strcpy(button[buttonNum].text, "Medium: Round 2");
-	// button[buttonNum].down = 0;
-	// button[buttonNum].click = 0;
-	// button[buttonNum].color[0] = 1.0f;
-	// button[buttonNum].color[1] = 0.5f;
-	// button[buttonNum].color[2] = 0.0f;
-	// button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
-	// button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
-	// button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
-	// button[buttonNum].text_color = 0x00ffffff;
-	// buttonNum++;
+	// Round 1 Button position
+	button[buttonNum].r.width = 200;
+	button[buttonNum].r.height = 100;
+	button[buttonNum].r.left = 100;
+	button[buttonNum].r.bot = 30;
+	button[buttonNum].r.right =
+		button[buttonNum].r.left + button[buttonNum].r.width;
+	button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
+	button[buttonNum].r.centerx =
+		(button[buttonNum].r.left + button[buttonNum].r.right) / 2;
+	button[buttonNum].r.centery =
+		(button[buttonNum].r.bot + button[buttonNum].r.top) / 2;
+	strcpy(button[buttonNum].text, "Easy: Round 1");
+	button[buttonNum].down = 0;
+	button[buttonNum].click = 0;
+	button[buttonNum].color[0] = 1.0f;
+	button[buttonNum].color[1] = 1.0f;
+	button[buttonNum].color[2] = 1.0f;
+	button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
+	button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
+	button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
+	button[buttonNum].text_color = 0x00ffffff;
+	buttonNum++;
 
-	// // Round 3 Button position
-	// button[buttonNum].r.width = 200;
-	// button[buttonNum].r.height = 100;
-	// button[buttonNum].r.left = 800;
-	// button[buttonNum].r.bot = 30;
-	// button[buttonNum].r.right =
-	// 	button[buttonNum].r.left + button[buttonNum].r.width;
-	// button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
-	// button[buttonNum].r.centerx =
-	// 	(button[buttonNum].r.left + button[buttonNum].r.right) / 2;
-	// button[buttonNum].r.centery =
-	// 	(button[buttonNum].r.bot + button[buttonNum].r.top) / 2;
-	// strcpy(button[buttonNum].text, "Hard: Round 3");
-	// button[buttonNum].down = 0;
-	// button[buttonNum].click = 0;
-	// button[buttonNum].color[0] = 0.5f;
-	// button[buttonNum].color[1] = 0.3f;
-	// button[buttonNum].color[2] = 0.9f;
-	// button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
-	// button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
-	// button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
-	// button[buttonNum].text_color = 0x00ffffff;
-	// buttonNum++;
+	// Round 2 Button position
+	button[buttonNum].r.width = 200;
+	button[buttonNum].r.height = 100;
+	button[buttonNum].r.left = 450;
+	button[buttonNum].r.bot = 30;
+	button[buttonNum].r.right =
+		button[buttonNum].r.left + button[buttonNum].r.width;
+	button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
+	button[buttonNum].r.centerx =
+		(button[buttonNum].r.left + button[buttonNum].r.right) / 2;
+	button[buttonNum].r.centery =
+		(button[buttonNum].r.bot + button[buttonNum].r.top) / 2;
+	strcpy(button[buttonNum].text, "Medium: Round 2");
+	button[buttonNum].down = 0;
+	button[buttonNum].click = 0;
+	button[buttonNum].color[0] = 1.0f;
+	button[buttonNum].color[1] = 0.5f;
+	button[buttonNum].color[2] = 0.0f;
+	button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
+	button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
+	button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
+	button[buttonNum].text_color = 0x00ffffff;
+	buttonNum++;
+
+	// Round 3 Button position
+	button[buttonNum].r.width = 200;
+	button[buttonNum].r.height = 100;
+	button[buttonNum].r.left = 800;
+	button[buttonNum].r.bot = 30;
+	button[buttonNum].r.right =
+		button[buttonNum].r.left + button[buttonNum].r.width;
+	button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
+	button[buttonNum].r.centerx =
+		(button[buttonNum].r.left + button[buttonNum].r.right) / 2;
+	button[buttonNum].r.centery =
+		(button[buttonNum].r.bot + button[buttonNum].r.top) / 2;
+	strcpy(button[buttonNum].text, "Hard: Round 3");
+	button[buttonNum].down = 0;
+	button[buttonNum].click = 0;
+	button[buttonNum].color[0] = 0.5f;
+	button[buttonNum].color[1] = 0.3f;
+	button[buttonNum].color[2] = 0.9f;
+	button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
+	button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
+	button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
+	button[buttonNum].text_color = 0x00ffffff;
+	buttonNum++;
 
 }
 // Mouse Button Clicked
 void mouse_click(int action)
 {
-	mouse_over_button(action, &g.Startscreen, &g.round1,
-		&g.round2, &g.round3);
-	// for (int i = 0; i < buttonNum; i++){
-	// 	if (action == 1) {
-	// 		if (button[i].over) {
-	// 			button[i].down = 1;
-	// 			button[i].click = 1;
-	// 			g.Startscreen ^= 1;
-	// 			// go to round
-	// 			if (i == 0){
-	// 				g.round1 ^= 1;
-	// 			}
-	// 			if (i == 1){
-	// 				g.round2 ^= 1;
-	// 			}
-	// 			if (i == 2){
-	// 				g.round3 ^= 1;
-	// 			}
-	// 		}
-	// 	}
-	// }
-	//resetting cards
-	for (int i=0; i<5; i++) {
-		for (int j=0; j<8; j++) {
-			g.cards[i][j].flip = 0; 
-			g.cards[i][j].match = 0;
+	for (int i = 0; i < buttonNum; i++){
+		if (action == 1) {
+			if (button[i].over) {
+				button[i].down = 1;
+				button[i].click = 1;
+				g.Startscreen ^= 1;
+				// go to round
+				if (i == 0){
+					g.easy_r1 ^= 1;
+				}
+				if (i == 1){
+					g.easy_r2 ^= 1;
+				}
+				if (i == 2){
+					g.easy_r3 ^= 1;
+				}
+				//resetting cards
+				for (int i=0; i<5; i++) {
+					for (int j=0; j<8; j++) {
+						cards[i][j].flip = 0; 
+						cards[i][j].match = 0;
+					}
+				}
+			}
 		}
 	}		
 
@@ -1083,31 +1066,33 @@ void checkMouse(XEvent *e)
 		// return;
 		return;
 	}
+    int yres = g.yres;
 	if (e->type == ButtonPress) {
 		if (e->xbutton.button==1) {
 			//Left button is down
 			g.lrbutton = 1;
 			//flipCard(mx,my);
-            if (g.round1)
-                flipCard(mx,my,3,4);
-			if (g.round2)
-                flipCard(mx,my,4,4);
-            if (g.round3)
-                flipCard(mx,my,4,5);
+            if (g.easy_r1)
+                //flipCard(mx,my,3,4);
+                flipCard(mx,my,3,4,g.start_x,g.start_y,yres,cards);
+			if (g.easy_r2)
+                flipCard(mx,my,4,4,g.start_x,g.start_y,yres,cards);
+            if (g.easy_r3)
+                flipCard(mx,my,4,5,g.start_x,g.start_y,yres,cards);
             //
-            if (g.round4)
-                flipCard(mx,my,3,5);
-            if (g.round5)
-                flipCard(mx,my,4,6);
-            if (g.round6)
-                flipCard(mx,my,5,6);
+            if (g.med_r1)
+                flipCard(mx,my,3,5,g.start_x,g.start_y,yres,cards);
+            if (g.med_r2)
+                flipCard(mx,my,4,6,g.start_x,g.start_y,yres,cards);
+            if (g.med_r3)
+                flipCard(mx,my,5,6,g.start_x,g.start_y,yres,cards);
             //
-            if (g.round7)
-                flipCard(mx,my,4,5);
-            if (g.round8)
-                flipCard(mx,my,4,7);
-            if (g.round9)
-                flipCard(mx,my,5,8);
+            if (g.hard_r1)
+                flipCard(mx,my,4,5,g.start_x,g.start_y,yres,cards);
+            if (g.hard_r2)
+                flipCard(mx,my,4,7,g.start_x,g.start_y,yres,cards);
+            if (g.hard_r3)
+                flipCard(mx,my,5,8,g.start_x,g.start_y,yres,cards);
 		}
 		if (e->xbutton.button==3) {
 			//Right button is down
@@ -1121,19 +1106,19 @@ void checkMouse(XEvent *e)
 			savey = my;
 		}
 	}
-	hover_button(savex, savey);
+
 	// is mouse over square?
-	// for (int i = 0; i < buttonNum; i++){
-	// 	button[i].over = 0;
-	// 	button[i].down = 0;
-	// 	if (savex >= button[i].r.left &&
-	// 		savex <= button[i].r.right &&
-	// 		savey >= button[i].r.bot &&
-	// 		savey <= button[i].r.top) {
-	// 			button[i].over = 1;
-	// 			break;
-	// 	}
-	// }
+	for (int i = 0; i < buttonNum; i++){
+		button[i].over = 0;
+		button[i].down = 0;
+		if (savex >= button[i].r.left &&
+			savex <= button[i].r.right &&
+			savey >= button[i].r.bot &&
+			savey <= button[i].r.top) {
+				button[i].over = 1;
+				break;
+		}
+	}
 	if (g.lrbutton)
 		mouse_click(1);
 }
@@ -1159,120 +1144,138 @@ int checkKeys(XEvent *e)
             //resetting cards
             for (int i=0; i<5; i++) {
                 for (int j=0; j<8; j++) {
-                    g.cards[i][j].flip = 0; 
-                    g.cards[i][j].match = 0;
+                    cards[i][j].flip = 0; 
+                    cards[i][j].match = 0;
                 }
             } 
             g.random = 1;
-            g.round2=g.round3=g.round4=g.round5=g.round6=g.round7=g.round8=g.round9=0;
+            g.easy_r2=g.easy_r3
+                =g.med_r1=g.med_r2=g.med_r3
+                =g.hard_r1=g.hard_r2=g.hard_r3=0;
             g.witch = g.showBigfoot = 0; 
-			g.Startscreen ^= 1;
-            g.round1 ^= 1;
+            g.Startscreen ^= 1;
+            g.easy_r1 ^= 1;
             break;
         case XK_2:
             for (int i=0; i<5; i++) {
                 for (int j=0; j<8; j++) {
-                    g.cards[i][j].flip = 0; 
-                    g.cards[i][j].match = 0;
+                    cards[i][j].flip = 0; 
+                    cards[i][j].match = 0;
                 }
             }
             g.random = 1; 
-            g.round1=g.round3=g.round4=g.round5=g.round6=g.round7=g.round8=g.round9=0;
+            g.easy_r1=g.easy_r3
+                =g.med_r1=g.med_r2=g.med_r3
+                =g.hard_r1=g.hard_r2=g.hard_r3=0;
             g.witch = g.showBigfoot = 0;
 			g.Startscreen ^= 1;
-            g.round2 ^= 1;
+            g.easy_r2 ^= 1;
             break;
         case XK_3:
             for (int i=0; i<5; i++) {
                 for (int j=0; j<8; j++) {
-                    g.cards[i][j].flip = 0; 
-                    g.cards[i][j].match = 0;
+                    cards[i][j].flip = 0; 
+                    cards[i][j].match = 0;
                 }
             } 
             g.random = 1;
-            g.round1=g.round2=g.round4=g.round5=g.round6=g.round7=g.round8=g.round9=0;
+            g.easy_r1=g.easy_r2
+                =g.med_r1=g.med_r2=g.med_r3
+                =g.hard_r1=g.hard_r2=g.hard_r3=0;
             g.witch = g.showBigfoot = 0;
 			g.Startscreen ^= 1;
-            g.round3 ^= 1;
+            g.easy_r3 ^= 1;
             break; 
         case XK_4:
             for (int i=0; i<4; i++) {
                 for (int j=0; j<5; j++) {
-                    g.cards[i][j].flip = 0; 
-                    g.cards[i][j].match = 0;
+                    cards[i][j].flip = 0; 
+                    cards[i][j].match = 0;
                 }
             } 
             g.random = 1;
-            g.round1=g.round2=g.round3=g.round5=g.round6=g.round7=g.round8=g.round9=0;
+            g.easy_r1=g.easy_r2=g.easy_r3
+                =g.med_r2=g.med_r3=g.hard_r1
+                =g.hard_r2=g.hard_r3=0;
             g.witch = g.showBigfoot = 0;
 			g.Startscreen ^= 1;
-            g.round4 ^= 1;
+            g.med_r1 ^= 1;
             break;
         case XK_5:
             for (int i=0; i<4; i++) {
                 for (int j=0; j<5; j++) {
-                    g.cards[i][j].flip = 0; 
-                    g.cards[i][j].match = 0;
+                    cards[i][j].flip = 0; 
+                    cards[i][j].match = 0;
                 }
             } 
             g.random = 1;
-            g.round1=g.round2=g.round3=g.round4=g.round6=g.round7=g.round8=g.round9=0;
+            g.easy_r1=g.easy_r2=g.easy_r3
+                =g.med_r1=g.med_r3
+                =g.hard_r1=g.hard_r2=g.hard_r3=0;
             g.witch = g.showBigfoot = 0;
 			g.Startscreen ^= 1;
-            g.round5 ^= 1;
+            g.med_r2 ^= 1;
             break;
         case XK_6:
             for (int i=0; i<4; i++) {
                 for (int j=0; j<5; j++) {
-                    g.cards[i][j].flip = 0; 
-                    g.cards[i][j].match = 0;
+                    cards[i][j].flip = 0; 
+                    cards[i][j].match = 0;
                 }
             } 
             g.random = 1;
-            g.round1=g.round2=g.round3=g.round4=g.round5=g.round7=g.round8=g.round9=0;
+            g.easy_r1=g.easy_r2=g.easy_r3
+                =g.med_r1=g.med_r2
+                =g.hard_r1=g.hard_r2=g.hard_r3=0;
             g.witch = g.showBigfoot = 0; 
 			g.Startscreen ^= 1;
-            g.round6 ^= 1;
+            g.med_r3 ^= 1;
             break;
         case XK_7:
             for (int i=0; i<4; i++) {
                 for (int j=0; j<5; j++) {
-                    g.cards[i][j].flip = 0; 
-                    g.cards[i][j].match = 0;
+                    cards[i][j].flip = 0; 
+                    cards[i][j].match = 0;
                 }
             } 
             g.random = 1;
-            g.round1=g.round2=g.round3=g.round4=g.round5=g.round6=g.round8=g.round9=0;
+            g.easy_r1=g.easy_r2=g.easy_r3
+                =g.med_r1=g.med_r2=g.med_r3
+                =g.hard_r2=g.hard_r3=0;
             g.witch = g.showBigfoot = 0; 
 			g.Startscreen ^= 1;
-            g.round7 ^= 1;
+            g.hard_r1 ^= 1;
             break;
         case XK_8:
             for (int i=0; i<4; i++) {
                 for (int j=0; j<5; j++) {
-                    g.cards[i][j].flip = 0; 
-                    g.cards[i][j].match = 0;
+                    cards[i][j].flip = 0; 
+                    cards[i][j].match = 0;
                 }
             } 
             g.random = 1;
-            g.round1=g.round2=g.round3=g.round4=g.round5=g.round6=g.round7=g.round9=0;
+            g.easy_r1=g.easy_r2=g.easy_r3
+                =g.med_r1=g.med_r2=g.med_r3
+                =g.hard_r1=g.hard_r3=0;
             g.witch = g.showBigfoot = 0; 
 			g.Startscreen ^= 1;
-            g.round8 ^= 1;
+            g.hard_r2 ^= 1;
             break;
         case XK_9:
             for (int i=0; i<4; i++) {
                 for (int j=0; j<5; j++) {
-                    g.cards[i][j].flip = 0; 
-                    g.cards[i][j].match = 0;
+                    cards[i][j].flip = 0; 
+                    cards[i][j].match = 0;
                 }
             } 
             g.random = 1;
-            g.round1=g.round2=g.round3=g.round4=g.round5=g.round6=g.round7=g.round8=0;
+            g.easy_r1=g.easy_r2=g.easy_r3
+                =g.med_r1=g.med_r2=g.med_r3
+                =g.hard_r1=g.hard_r2=0;
             g.witch = g.showBigfoot = 0; 
 			g.Startscreen ^= 1;
-            g.round9 ^= 1;
-            break;    
+            g.hard_r3 ^= 1;
+            break; 
         case XK_c:
             g.show_credits ^= 1;
             break;
@@ -1665,38 +1668,7 @@ void drawRaindrops()
 	glLineWidth(1);
 }
 
-//Dat
-//make struct rectangles for texture maps
-void makeCards(int row, int col) {
-    for (int i=0; i<row; i++) {
-        for (int j=0; j<col; j++) {
-            g.cards[i][j].xbox = g.start_x + (j*100.0f);
-            g.cards[i][j].ybox = g.start_y - (i*130.0f);
-        }
-    } 
-}
-
-//Dat
-void drawCard(int row,int col, GLuint texture) 
-{
-    glPushMatrix();
-    glTranslatef(g.cards[row][col].xbox, g.cards[row][col].ybox, 0.0f);
-			
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glBegin(GL_QUADS);    
-        glTexCoord2f(0.0f, 1.0f); 
-        glVertex2f(-g.cards[row][col].wbox, -g.cards[row][col].hbox);
-        glTexCoord2f(0.0f, 0.0f); 
-        glVertex2f(-g.cards[row][col].wbox,  g.cards[row][col].hbox); 
-        glTexCoord2f(1.0f, 0.0f); 
-        glVertex2f( g.cards[row][col].wbox,  g.cards[row][col].hbox); 
-        glTexCoord2f(1.0f, 1.0f); 
-        glVertex2f( g.cards[row][col].wbox, -g.cards[row][col].hbox);      
-    glEnd();
-    glPopMatrix();
-}
-
-//Dat
+//Dat Pham
 void pickCard(int i, int j, int id) {
     switch (id) {
         case 1:
@@ -1730,189 +1702,15 @@ void pickCard(int i, int j, int id) {
             drawCard(i,j,g.card10Texture);
             break;
     }
-
 }
 
 //Dat
-//draw all the randomized card fronts
-void randomHelper(int row, int col, int arr[]) 
-{        
-    int k = 0;
-    for (int i=0; i<row; i++) {
-        for (int j=0; j<col; j++) {
-	        if (g.cards[i][j].match == 0) {      
-                pickCard(i,j,arr[k]);
-            }
-            k++;
-        }
-    }    
-}
-
-//Dat 
-void drawBack(int row, int col)
-{
-	for (int i=0; i<row; i++) {
-		for (int j=0; j<col; j++) {	
-            if (g.cards[i][j].flip == 0) {      
-                drawCard(i,j,g.cardTexture);
-            }
-        }
-	}        
-}
-
-//Dat Pham
-//matching pairs
-void playCards(int row, int col)
-{
-    int prev_i, prev_j, prev_id; //remember previous card
-    int compare = 0;
-	
-    for (int i=0; i<row; i++) {
-        for (int j=0; j<col; j++) {
-			//usleep(12000);
-            if (g.cards[i][j].flip == 1 && g.cards[i][j].match == 0) { 
-                compare++;
-                
-                //saving prev card info
-                if (compare == 1) {
-                    prev_i = i;
-                    prev_j = j;
-                    prev_id = g.cards[i][j].id;
-                } 
-                
-                //does the pair of cards match?
-                if (compare == 2) {
-                    if (prev_id == g.cards[i][j].id) {
-                        g.cards[i][j].match = 1;
-                        g.cards[prev_i][prev_j].match = 1;
-                        compare = 0;
-                        break;
-                    }
-                    
-                    g.cards[i][j].flip = 0;
-                    g.cards[prev_i][prev_j].flip = 0; 
-                    compare = 0; 
-                    break; 
-                } 
-            }
-        }
-    }
-}
-
-
-//Dat
-//matching triplets
-void playCards2(int row, int col)
-{   
-    //remember previous cards
-    int prev_i, prev_j, prev_id; 
-    int prev_i2, prev_j2, prev_id2; 
-    
-    int compare = 0;
-    for (int i=0; i<row; i++) {
-        for (int j=0; j<col; j++) {
-			//usleep(12000);
-            if (g.cards[i][j].flip == 1 && g.cards[i][j].match == 0) { 
-                compare++;
-                
-                //saving prev card info
-                if (compare == 1) {
-                    prev_i = i;
-                    prev_j = j;
-                    prev_id = g.cards[i][j].id;
-                } 
-
-                if (compare == 2) {
-                    prev_i2 = i;
-                    prev_j2 = j;
-                    prev_id2 = g.cards[i][j].id;
-                } 
-                
-                //does the pair of cards match?
-                if (compare == 3) {
-                    if (prev_id == g.cards[i][j].id && prev_id2 == g.cards[i][j].id) {
-                        g.cards[i][j].match = 1;
-                        g.cards[prev_i][prev_j].match = 1;
-                        g.cards[prev_i2][prev_j2].match = 1;
-                        compare = 0;
-                        break;
-                    }
-                    
-                    g.cards[i][j].flip = 0;
-                    g.cards[prev_i][prev_j].flip = 0; 
-                    g.cards[prev_i2][prev_j2].flip = 0; 
-                    compare = 0; 
-                    break; 
-                } 
-            }
-        }
-    }
-}
-
-//Dat
-//matching quadruplets
-void playCards3(int row, int col)
-{
-    //remeber previous cards
-    int prev_i, prev_j, prev_id; 
-    int prev_i2, prev_j2, prev_id2; 
-    int prev_i3, prev_j3, prev_id3; 
-   
-    int compare = 0;	
-    for (int i=0; i<row; i++) {
-        for (int j=0; j<col; j++) {
-			//usleep(12000);
-            if (g.cards[i][j].flip == 1 && g.cards[i][j].match == 0) { 
-                compare++;
-                
-                //saving prev card info
-                if (compare == 1) {
-                    prev_i = i;
-                    prev_j = j;
-                    prev_id = g.cards[i][j].id;
-                } 
-                if (compare == 2) {
-                    prev_i2 = i;
-                    prev_j2 = j;
-                    prev_id2 = g.cards[i][j].id;
-                }
-                if (compare == 3) {
-                    prev_i3 = i;
-                    prev_j3 = j;
-                    prev_id3 = g.cards[i][j].id;
-                }
-
-                //does the pair of cards match?
-                if (compare == 4) {
-                    if (prev_id == g.cards[i][j].id && 
-                        prev_id2 == g.cards[i][j].id &&
-                        prev_id3 == g.cards[i][j].id ) {
-                        g.cards[i][j].match = 1;
-                        g.cards[prev_i][prev_j].match = 1;
-                        g.cards[prev_i2][prev_j2].match = 1;
-                        g.cards[prev_i3][prev_j3].match = 1; 
-                        compare = 0;
-                        break;
-                    }
-                    
-                    g.cards[i][j].flip = 0;
-                    g.cards[prev_i][prev_j].flip = 0; 
-                    g.cards[prev_i2][prev_j2].flip = 0; 
-                    g.cards[prev_i3][prev_j3].flip = 0;  
-                    compare = 0; 
-                    break; 
-                } 
-            }
-        }
-    }
-}
-
-//Dat
+//leaving this function here to test and improve designs on a victory later...
 void win_message(int row, int col) {    
     int count = 0;
     for (int i=0; i<row; i++) {
         for (int j=0; j<col; j++) {
-            if (g.cards[i][j].match == 1) 
+            if (cards[i][j].match == 1) 
                 count++;
         }
     }    
@@ -1922,16 +1720,15 @@ void win_message(int row, int col) {
     r.center = 0;
 	        
     if (count == row*col) {
-        g.witch =1;
+        g.witch = 1;
         //g.showBigfoot =1;
         ggprint16(&r, 0, 0x00000000, "YOU WIN!!! <3");
     } 
 }
-
-
-
+/*
 //McKay Russell
 //inputs: mouse x coordinate, mouse y coordinate
+
 void flipCard(int mx, int my, int row, int col)
 {
 	float x = g.start_x-40; 
@@ -1942,11 +1739,12 @@ void flipCard(int mx, int my, int row, int col)
 			if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
 					&& my < y+(130 * i)+120)
 			{
-                g.cards[i][j].flip = 1;  
+                cards[i][j].flip = 1;  
 			}
         }
 	}
 }  
+*/
 
 void render()
 {
@@ -1974,313 +1772,187 @@ void render()
     r.left = g.xres/2;  
     r.center = 10;
     int h = 25;
+     
+    if (g.easy_r1) {
+        drawBackground(g.xres,g.yres,g.forestTexture);
        
-    if (g.round1) {
-	drawBackground(g.xres,g.yres,g.forestTexture);
+         
         if (g.random == 1) {  
             //randomize cards
             random_shuffle(g.easy1, g.easy1 + 3*4);
-          
-            //set up card id (3x4 grid)
-            int k = 0;
-            for (int i=0; i<3; i++) {
-                for (int j=0; j<4; j++) {
-	                g.cards[i][j].id = g.easy1[k];
-                    k++;
-                }
-            } 
             g.random = 0;
 
+            //test(3,4,cards);  
+           
             /*
             //print randomized array
             for (int i = 0; i < 12; ++i)
-                cout << g.pack1[i] << " ";
+                cout << g.easy1[i] << " ";
             cout << endl;
             */
+        }  
+        //test(3,4,cards);
+        /*      
+        for (int i=0; i<3; i++) {
+            for (int j=0; j<4; j++) {
+	            cout << cards[i][j].id << " ";
+                    
+            }
         } 
-        
-        makeCards(3,4);
+        cout << endl; */
+    
+        makeCards(3,4,g.start_x,g.start_y);
         randomHelper(3,4,g.easy1); 
-        drawBack(3,4);  
-        playCards(3,4);
+        drawBack(3,4,g.cardTexture,cards);    
+        matchPairs(3,4,cards);
         win_message(3,4);
-
+      
         ggprint16(&r, h, c, "Match pairs (2 cards)");	
 		ggprint16(&r, h, c, "Press 1 for Menu");
    	}
-   
-    if (g.round2) {
-		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
-			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
-			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
-			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
-		glEnd(); 
-        
+     
+    if (g.easy_r2) {
+	    drawBackground(g.xres,g.yres,g.forestTexture);
+     
         if (g.random == 1) {  
-            //randomize cards
             random_shuffle(g.easy2, g.easy2 + 4*4);
-            
-            //set up card id (4x4 grid)
-            int k = 0;
-            for (int i=0; i<4; i++) {
-                for (int j=0; j<4; j++) {
-	                g.cards[i][j].id = g.easy2[k];
-                    k++;
-                }
-            } 
             g.random = 0;
         } 
         
-        makeCards(4,4);
+        makeCards(4,4,g.start_x,g.start_y);
         randomHelper(4,4,g.easy2); 
-        drawBack(4,4);  
-        playCards(4,4);
+        drawBack(4,4,g.cardTexture,cards);    
+        matchPairs(4,4,cards);
         win_message(4,4);
-	   
+   
         ggprint16(&r, h, c, "Press 2 for Menu");
 	    ggprint16(&r, h, c, "Match pairs (2 cards)");	
     }
     
-    if (g.round3) {
-		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
-			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
-			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
-			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
-		glEnd(); 
-        
+    if (g.easy_r3) {
+	    drawBackground(g.xres,g.yres,g.forestTexture);
+      
         if (g.random == 1) {  
-            //randomize cards
             random_shuffle(g.easy3, g.easy3 + 4*5);
-            
-            //set up card id (4x5 grid)
-            int k = 0;
-            for (int i=0; i<4; i++) {
-                for (int j=0; j<5; j++) {
-	                g.cards[i][j].id = g.easy3[k];
-                    k++;
-                }
-            } 
             g.random = 0;
-        } 
-         
-        makeCards(4,5);
-        randomHelper(4,5,g.easy3); 
-        drawBack(4,5);  
-        playCards(4,5);
-        win_message(4,5);
+        }
 
+        makeCards(4,5,g.start_x,g.start_y);
+        randomHelper(4,5,g.easy3); 
+        drawBack(4,5,g.cardTexture,cards);    
+        matchPairs(4,5,cards);
+        win_message(4,5);
+         
         ggprint16(&r, h, c, "Match pairs (2 cards)");	
         ggprint16(&r, h, c, "Press 3 for Menu");
 	}
    
-    if (g.round4) {
-		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
-			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
-			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
-			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
-		glEnd(); 
-        
+    if (g.med_r1) {
+        drawBackground(g.xres,g.yres,g.forestTexture);
+      
         if (g.random == 1) {  
-            //randomize cards
             random_shuffle(g.medium1, g.medium1 + 3*5);
-            
-            //set up card id (3x5 grid)
-            int k = 0;
-            for (int i=0; i<3; i++) {
-                for (int j=0; j<5; j++) {
-	                g.cards[i][j].id = g.medium1[k];
-                    k++;
-                }
-            } 
             g.random = 0;
         } 
-         
-        makeCards(3,5);
+        makeCards(3,5,g.start_x,g.start_y);
         randomHelper(3,5,g.medium1); 
-        drawBack(3,5);  
-        playCards2(3,5);
+        drawBack(3,5,g.cardTexture,cards);    
+        matchPairs(3,5,cards);
         win_message(3,5);
-
+   
         ggprint16(&r, h, c, "Match triplets (3 cards)");	  
 		ggprint16(&r, h, c, "Press 4 for Menu");
 	}
 
-    if (g.round5) {
-		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
-			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
-			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
-			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
-		glEnd(); 
-        
+    if (g.med_r2) {
+        drawBackground(g.xres,g.yres,g.forestTexture);
+      
         if (g.random == 1) {  
-            //randomize cards
             random_shuffle(g.medium2, g.medium2 + 4*6);
-            
-            //set up card id (4x6 grid)
-            int k = 0;
-            for (int i=0; i<4; i++) {
-                for (int j=0; j<6; j++) {
-	                g.cards[i][j].id = g.medium2[k];
-                    k++;
-                }
-            } 
             g.random = 0;
         } 
-         
-        makeCards(4,6);
+        makeCards(4,6,g.start_x,g.start_y);
         randomHelper(4,6,g.medium2); 
-        drawBack(4,6);  
-        playCards2(4,6);
+        drawBack(4,6,g.cardTexture,cards);    
+        matchPairs(4,6,cards);
         win_message(4,6);
-
+         
         ggprint16(&r, h, c, "Match triplets (3 cards)");	 
         ggprint16(&r, h, c, "Press 5 for Menu");
 	}
 
-    if (g.round6) {
-		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
-			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
-			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
-			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
-		glEnd(); 
-        
+    if (g.med_r3) {
+        drawBackground(g.xres,g.yres,g.forestTexture);
+      
         if (g.random == 1) {  
-            //randomize cards
             random_shuffle(g.medium3, g.medium3 + 5*6);
-            
-            //set up card id (5x6 grid)
-            int k = 0;
-            for (int i=0; i<5; i++) {
-                for (int j=0; j<6; j++) {
-	                g.cards[i][j].id = g.medium3[k];
-                    k++;
-                }
-            } 
             g.random = 0;
         } 
          
-        makeCards(5,6);
+        makeCards(5,6,g.start_x,g.start_y);
         randomHelper(5,6,g.medium3); 
-        drawBack(5,6);  
-        playCards2(5,6);
+        drawBack(5,6,g.cardTexture,cards);    
+        matchPairs(5,6,cards);
         win_message(5,6);
-
+   
         ggprint16(&r, h, c, "Match triplets (3 cards)");	
         ggprint16(&r, h, c, "Press 6 for Menu");
 	}
 
-    if (g.round7) {
-		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
-			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
-			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
-			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
-		glEnd(); 
-        
+    if (g.hard_r1) { 
+        drawBackground(g.xres,g.yres,g.forestTexture);
+      
         if (g.random == 1) {  
-            //randomize cards
             random_shuffle(g.hard1, g.hard1 + 4*5);
-            
-            //set up card id (4x5 grid)
-            int k = 0;
-            for (int i=0; i<4; i++) {
-                for (int j=0; j<5; j++) {
-	                g.cards[i][j].id = g.hard1[k];
-                    k++;
-                }
-            } 
             g.random = 0;
         } 
          
-        makeCards(4,5);
+        makeCards(4,5,g.start_x,g.start_y);
         randomHelper(4,5,g.hard1); 
-        drawBack(4,5);  
-        playCards3(4,5);
+        drawBack(4,5,g.cardTexture,cards);    
+        matchPairs(4,5,cards);
         win_message(4,5);
-
+   
         ggprint16(&r, h, c, "Match quadruplets (4 cards)"); 
         ggprint16(&r, h, c, "Press 7 for Menu");
 	}
 
-    if (g.round8) {
-		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
-			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
-			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
-			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
-		glEnd(); 
-        
+    if (g.hard_r2) {
+        drawBackground(g.xres,g.yres,g.forestTexture);
+      
         if (g.random == 1) {  
-            //randomize cards
             random_shuffle(g.hard2, g.hard2 + 4*7);
-            
-            //set up card id (4x7 grid)
-            int k = 0;
-            for (int i=0; i<4; i++) {
-                for (int j=0; j<7; j++) {
-	                g.cards[i][j].id = g.hard2[k];
-                    k++;
-                }
-            } 
             g.random = 0;
         } 
-         
-        makeCards(4,7);
+       
+        makeCards(4,7,g.start_x,g.start_y);
         randomHelper(4,7,g.hard2); 
-        drawBack(4,7);  
-        playCards3(4,7);
+        drawBack(4,7,g.cardTexture,cards);    
+        matchPairs(4,7,cards);
         win_message(4,7);
-
+   
         ggprint16(&r, h, c, "Match quadruplets (4 cards)"); 
         ggprint16(&r, h, c, "Press 8 for Menu");
 	}
 
-    if (g.round9) {
-		glBindTexture(GL_TEXTURE_2D, g.forestTexture);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
-			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
-			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
-			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
-		glEnd(); 
-        
+    if (g.hard_r3) {
+        drawBackground(g.xres,g.yres,g.forestTexture);
+      
         if (g.random == 1) {  
-            //randomize cards
             random_shuffle(g.hard3, g.hard3 + 5*8);
-            
-            //set up card id (5x6 grid)
-            int k = 0;
-            for (int i=0; i<5; i++) {
-                for (int j=0; j<8; j++) {
-	                g.cards[i][j].id = g.hard3[k];
-                    k++;
-                }
-            } 
             g.random = 0;
         } 
          
-        makeCards(4,8);
+        makeCards(4,8,g.start_x,g.start_y);
         randomHelper(4,8,g.hard3); 
-        drawBack(4,8);  
-        playCards3(4,8);
+        drawBack(4,8,g.cardTexture,cards);    
+        matchPairs(4,8,cards);
         win_message(4,8);
-        
+   
         ggprint16(&r, h, c, "Match quadruplets (4 cards)");
         ggprint16(&r, h, c, "Press 9 for Menu");
 	}
-
+    
     if (g.showBigfoot) {
 		glPushMatrix();
 		glTranslatef(bigfoot.pos[0], bigfoot.pos[1], bigfoot.pos[2]);
@@ -2387,56 +2059,56 @@ void render()
 			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
 			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
 		glEnd();
-		draw_buttons();
+
 		// Draw Buttons
-		// for (int i=0; i<buttonNum; i++) {
-		// 	if (button[i].over) {
-		// 		glColor3f(1.0f, 0.0f, 0.0f);
-		// 		//draw a highlight around button
-		// 		glLineWidth(2);
-		// 		glBegin(GL_LINE_LOOP);
-		// 			glVertex2i(button[i].r.left-2,  button[i].r.bot-2);
-		// 			glVertex2i(button[i].r.left-2,  button[i].r.top+2);
-		// 			glVertex2i(button[i].r.right+2, button[i].r.top+2);
-		// 			glVertex2i(button[i].r.right+2, button[i].r.bot-2);
-		// 			glVertex2i(button[i].r.left-2,  button[i].r.bot-2);
-		// 		glEnd();
-		// 		glLineWidth(1);
-		// 	}
-		// 	if (button[i].down) {
-		// 		glColor3fv(button[i].dcolor);
-		// 	} else {
-		// 		glColor3fv(button[i].color);
-		// 	}
-		// 	glBegin(GL_QUADS);
-		// 		glVertex2i(button[i].r.left,  button[i].r.bot);
-		// 		glVertex2i(button[i].r.left,  button[i].r.top);
-		// 		glVertex2i(button[i].r.right, button[i].r.top);
-		// 		glVertex2i(button[i].r.right, button[i].r.bot);
-		// 	glEnd();
-		// 	r.left = button[i].r.centerx;
-		// 	r.bot  = button[i].r.centery-8;
-		// 	r.center = 1;
-		// 	if (button[i].down) {
-		// 		ggprint16(&r, 0, button[i].text_color, "Goodluck!");
-		// 	} else {
-		// 		ggprint16(&r, 0, button[i].text_color, button[i].text);
-		// 	}
-		// }
+		for (int i=0; i<buttonNum; i++) {
+			if (button[i].over) {
+				glColor3f(1.0f, 0.0f, 0.0f);
+				//draw a highlight around button
+				glLineWidth(2);
+				glBegin(GL_LINE_LOOP);
+					glVertex2i(button[i].r.left-2,  button[i].r.bot-2);
+					glVertex2i(button[i].r.left-2,  button[i].r.top+2);
+					glVertex2i(button[i].r.right+2, button[i].r.top+2);
+					glVertex2i(button[i].r.right+2, button[i].r.bot-2);
+					glVertex2i(button[i].r.left-2,  button[i].r.bot-2);
+				glEnd();
+				glLineWidth(1);
+			}
+			if (button[i].down) {
+				glColor3fv(button[i].dcolor);
+			} else {
+				glColor3fv(button[i].color);
+			}
+			glBegin(GL_QUADS);
+				glVertex2i(button[i].r.left,  button[i].r.bot);
+				glVertex2i(button[i].r.left,  button[i].r.top);
+				glVertex2i(button[i].r.right, button[i].r.top);
+				glVertex2i(button[i].r.right, button[i].r.bot);
+			glEnd();
+			r.left = button[i].r.centerx;
+			r.bot  = button[i].r.centery-8;
+			r.center = 1;
+			if (button[i].down) {
+				ggprint16(&r, 0, button[i].text_color, "Goodluck!");
+			} else {
+				ggprint16(&r, 0, button[i].text_color, button[i].text);
+			}
+		}
 		unsigned int c = 0x00ffff44;
 		r.bot = g.yres - 20;
 		r.left = 10;
 		r.center = 0;
 		int h = 12;
-		ggprint8b(&r, h, c, "1 - Round 1");
-		ggprint8b(&r, h, c, "2 - Round 2");    
-		ggprint8b(&r, h, c, "3 - Round 3");
-        ggprint8b(&r, h, c, "4 - Round 4");
-		ggprint8b(&r, h, c, "5 - Round 5");    
-		ggprint8b(&r, h, c, "6 - Round 6");
-	    ggprint8b(&r, h, c, "7 - Round 7");
-		ggprint8b(&r, h, c, "8 - Round 8");    
-		ggprint8b(&r, h, c, "9 - Round 9");
+		ggprint8b(&r, h, c, "1 - Round 1 (easy)");
+		ggprint8b(&r, h, c, "2 - Round 2 (easy)");    
+		ggprint8b(&r, h, c, "3 - Round 3 (easy)");
+        ggprint8b(&r, h, c, "4 - Round 1 (medium)");
+		ggprint8b(&r, h, c, "5 - Round 2 (medium)");    
+		ggprint8b(&r, h, c, "6 - Round 3 (medium)");
+	    ggprint8b(&r, h, c, "7 - Round 1 (hard)");
+		ggprint8b(&r, h, c, "8 - Round 2 (hard)");    
+		ggprint8b(&r, h, c, "9 - Round 3 (hard)");
 	    ggprint8b(&r, h, c, "0 - Witch");
 	    ggprint8b(&r, h, c, "B - Bigfoot");
         ggprint8b(&r, h, c, "F - Forest");
