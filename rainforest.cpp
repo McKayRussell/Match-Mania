@@ -88,6 +88,12 @@ extern void test(int,int,Card cards[][8]); //used for testing
 void extern flipCard(int,int,int,int,float,float,int,Card cards[][8]);
 //void drawCardFront(int row, int col, float w);
 
+extern void initialize_buttons();
+extern void mouse_over_button(int, int*, int*, int*, int*);
+extern void hover_button(int, int);
+extern void draw_buttons();
+
+
 class Image {
 public:
 	int width, height;
@@ -253,20 +259,6 @@ public:
 		logClose();
 	}
 } g;
-//
-/* ADDED FOR BUTTON */
-typedef struct t_button {
-	Rect r;
-	char text[32];
-	int over;
-	int down;
-	int click;
-	float color[3];
-	float dcolor[3];
-	unsigned int text_color;
-} Button;
-Button button [3];
-int buttonNum = 0;
 
 class Witch {
 public:
@@ -939,110 +931,15 @@ void init() {
 	MakeVector(6.0,0.0,0.0, witch.vel);
 
 	//initialize buttons...
-	buttonNum = 0;
-
-	// Round 1 Button position
-	button[buttonNum].r.width = 200;
-	button[buttonNum].r.height = 100;
-	button[buttonNum].r.left = 100;
-	button[buttonNum].r.bot = 30;
-	button[buttonNum].r.right =
-		button[buttonNum].r.left + button[buttonNum].r.width;
-	button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
-	button[buttonNum].r.centerx =
-		(button[buttonNum].r.left + button[buttonNum].r.right) / 2;
-	button[buttonNum].r.centery =
-		(button[buttonNum].r.bot + button[buttonNum].r.top) / 2;
-	strcpy(button[buttonNum].text, "Easy: Round 1");
-	button[buttonNum].down = 0;
-	button[buttonNum].click = 0;
-	button[buttonNum].color[0] = 1.0f;
-	button[buttonNum].color[1] = 1.0f;
-	button[buttonNum].color[2] = 1.0f;
-	button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
-	button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
-	button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
-	button[buttonNum].text_color = 0x00ffffff;
-	buttonNum++;
-
-	// Round 2 Button position
-	button[buttonNum].r.width = 200;
-	button[buttonNum].r.height = 100;
-	button[buttonNum].r.left = 450;
-	button[buttonNum].r.bot = 30;
-	button[buttonNum].r.right =
-		button[buttonNum].r.left + button[buttonNum].r.width;
-	button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
-	button[buttonNum].r.centerx =
-		(button[buttonNum].r.left + button[buttonNum].r.right) / 2;
-	button[buttonNum].r.centery =
-		(button[buttonNum].r.bot + button[buttonNum].r.top) / 2;
-	strcpy(button[buttonNum].text, "Medium: Round 2");
-	button[buttonNum].down = 0;
-	button[buttonNum].click = 0;
-	button[buttonNum].color[0] = 1.0f;
-	button[buttonNum].color[1] = 0.5f;
-	button[buttonNum].color[2] = 0.0f;
-	button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
-	button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
-	button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
-	button[buttonNum].text_color = 0x00ffffff;
-	buttonNum++;
-
-	// Round 3 Button position
-	button[buttonNum].r.width = 200;
-	button[buttonNum].r.height = 100;
-	button[buttonNum].r.left = 800;
-	button[buttonNum].r.bot = 30;
-	button[buttonNum].r.right =
-		button[buttonNum].r.left + button[buttonNum].r.width;
-	button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
-	button[buttonNum].r.centerx =
-		(button[buttonNum].r.left + button[buttonNum].r.right) / 2;
-	button[buttonNum].r.centery =
-		(button[buttonNum].r.bot + button[buttonNum].r.top) / 2;
-	strcpy(button[buttonNum].text, "Hard: Round 3");
-	button[buttonNum].down = 0;
-	button[buttonNum].click = 0;
-	button[buttonNum].color[0] = 0.5f;
-	button[buttonNum].color[1] = 0.3f;
-	button[buttonNum].color[2] = 0.9f;
-	button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
-	button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
-	button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
-	button[buttonNum].text_color = 0x00ffffff;
-	buttonNum++;
+	initialize_buttons();
 
 }
 // Mouse Button Clicked
 void mouse_click(int action)
 {
-	for (int i = 0; i < buttonNum; i++){
-		if (action == 1) {
-			if (button[i].over) {
-				button[i].down = 1;
-				button[i].click = 1;
-				g.Startscreen ^= 1;
-				// go to round
-				if (i == 0){
-					g.easy_r1 ^= 1;
-				}
-				if (i == 1){
-					g.easy_r2 ^= 1;
-				}
-				if (i == 2){
-					g.easy_r3 ^= 1;
-				}
-				//resetting cards
-				for (int i=0; i<5; i++) {
-					for (int j=0; j<8; j++) {
-						cards[i][j].flip = 0; 
-						cards[i][j].match = 0;
-					}
-				}
-			}
-		}
-	}		
+
+	mouse_over_button(action, &g.Startscreen, &g.easy_r1, &g.easy_r2
+		, &g.easy_r3);		
 
 }
 
@@ -1107,18 +1004,9 @@ void checkMouse(XEvent *e)
 		}
 	}
 
-	// is mouse over square?
-	for (int i = 0; i < buttonNum; i++){
-		button[i].over = 0;
-		button[i].down = 0;
-		if (savex >= button[i].r.left &&
-			savex <= button[i].r.right &&
-			savey >= button[i].r.bot &&
-			savey <= button[i].r.top) {
-				button[i].over = 1;
-				break;
-		}
-	}
+	// Check if mouse over sqaure
+	hover_button(savex, savey);
+
 	if (g.lrbutton)
 		mouse_click(1);
 }
@@ -2061,40 +1949,8 @@ void render()
 		glEnd();
 
 		// Draw Buttons
-		for (int i=0; i<buttonNum; i++) {
-			if (button[i].over) {
-				glColor3f(1.0f, 0.0f, 0.0f);
-				//draw a highlight around button
-				glLineWidth(2);
-				glBegin(GL_LINE_LOOP);
-					glVertex2i(button[i].r.left-2,  button[i].r.bot-2);
-					glVertex2i(button[i].r.left-2,  button[i].r.top+2);
-					glVertex2i(button[i].r.right+2, button[i].r.top+2);
-					glVertex2i(button[i].r.right+2, button[i].r.bot-2);
-					glVertex2i(button[i].r.left-2,  button[i].r.bot-2);
-				glEnd();
-				glLineWidth(1);
-			}
-			if (button[i].down) {
-				glColor3fv(button[i].dcolor);
-			} else {
-				glColor3fv(button[i].color);
-			}
-			glBegin(GL_QUADS);
-				glVertex2i(button[i].r.left,  button[i].r.bot);
-				glVertex2i(button[i].r.left,  button[i].r.top);
-				glVertex2i(button[i].r.right, button[i].r.top);
-				glVertex2i(button[i].r.right, button[i].r.bot);
-			glEnd();
-			r.left = button[i].r.centerx;
-			r.bot  = button[i].r.centery-8;
-			r.center = 1;
-			if (button[i].down) {
-				ggprint16(&r, 0, button[i].text_color, "Goodluck!");
-			} else {
-				ggprint16(&r, 0, button[i].text_color, button[i].text);
-			}
-		}
+		draw_buttons();
+		
 		unsigned int c = 0x00ffff44;
 		r.bot = g.yres - 20;
 		r.left = 10;
