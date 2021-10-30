@@ -87,6 +87,7 @@ extern void test(int,int,Card cards[][8]); //used for testing
 //
 void extern flipCard(int,int,int,int,float,float,int,Card cards[][8]);
 //void drawCardFront(int row, int col, float w);
+void resetCards(int, int, Card cards[][8]);
 
 extern void initialize_buttons();
 extern void mouse_over_button(int, int*, int*, int*, int*);
@@ -1029,13 +1030,8 @@ int checkKeys(XEvent *e)
 	}
 	switch (key) {
         case XK_1:
-            //resetting cards
-            for (int i=0; i<5; i++) {
-                for (int j=0; j<8; j++) {
-                    cards[i][j].flip = 0; 
-                    cards[i][j].match = 0;
-                }
-            } 
+			// reset the cards
+			resetCards(3, 4, cards);
             g.random = 1;
             g.easy_r2=g.easy_r3
                 =g.med_r1=g.med_r2=g.med_r3
@@ -1045,12 +1041,8 @@ int checkKeys(XEvent *e)
             g.easy_r1 ^= 1;
             break;
         case XK_2:
-            for (int i=0; i<5; i++) {
-                for (int j=0; j<8; j++) {
-                    cards[i][j].flip = 0; 
-                    cards[i][j].match = 0;
-                }
-            }
+			// reset the cards
+			resetCards(5, 8, cards);
             g.random = 1; 
             g.easy_r1=g.easy_r3
                 =g.med_r1=g.med_r2=g.med_r3
@@ -1060,12 +1052,8 @@ int checkKeys(XEvent *e)
             g.easy_r2 ^= 1;
             break;
         case XK_3:
-            for (int i=0; i<5; i++) {
-                for (int j=0; j<8; j++) {
-                    cards[i][j].flip = 0; 
-                    cards[i][j].match = 0;
-                }
-            } 
+            // reset the cards
+			resetCards(5, 8, cards);
             g.random = 1;
             g.easy_r1=g.easy_r2
                 =g.med_r1=g.med_r2=g.med_r3
@@ -1075,12 +1063,8 @@ int checkKeys(XEvent *e)
             g.easy_r3 ^= 1;
             break; 
         case XK_4:
-            for (int i=0; i<4; i++) {
-                for (int j=0; j<5; j++) {
-                    cards[i][j].flip = 0; 
-                    cards[i][j].match = 0;
-                }
-            } 
+            // reset the cards
+			resetCards(4, 5, cards);
             g.random = 1;
             g.easy_r1=g.easy_r2=g.easy_r3
                 =g.med_r2=g.med_r3=g.hard_r1
@@ -1090,12 +1074,8 @@ int checkKeys(XEvent *e)
             g.med_r1 ^= 1;
             break;
         case XK_5:
-            for (int i=0; i<4; i++) {
-                for (int j=0; j<5; j++) {
-                    cards[i][j].flip = 0; 
-                    cards[i][j].match = 0;
-                }
-            } 
+            // reset the cards
+			resetCards(4, 5, cards);
             g.random = 1;
             g.easy_r1=g.easy_r2=g.easy_r3
                 =g.med_r1=g.med_r3
@@ -1105,12 +1085,8 @@ int checkKeys(XEvent *e)
             g.med_r2 ^= 1;
             break;
         case XK_6:
-            for (int i=0; i<4; i++) {
-                for (int j=0; j<5; j++) {
-                    cards[i][j].flip = 0; 
-                    cards[i][j].match = 0;
-                }
-            } 
+            // reset the cards
+			resetCards(4, 5, cards);
             g.random = 1;
             g.easy_r1=g.easy_r2=g.easy_r3
                 =g.med_r1=g.med_r2
@@ -1120,12 +1096,8 @@ int checkKeys(XEvent *e)
             g.med_r3 ^= 1;
             break;
         case XK_7:
-            for (int i=0; i<4; i++) {
-                for (int j=0; j<5; j++) {
-                    cards[i][j].flip = 0; 
-                    cards[i][j].match = 0;
-                }
-            } 
+            // reset the cards
+			resetCards(4, 5, cards);
             g.random = 1;
             g.easy_r1=g.easy_r2=g.easy_r3
                 =g.med_r1=g.med_r2=g.med_r3
@@ -1135,12 +1107,8 @@ int checkKeys(XEvent *e)
             g.hard_r1 ^= 1;
             break;
         case XK_8:
-            for (int i=0; i<4; i++) {
-                for (int j=0; j<5; j++) {
-                    cards[i][j].flip = 0; 
-                    cards[i][j].match = 0;
-                }
-            } 
+            // reset the cards
+			resetCards(4, 5, cards);
             g.random = 1;
             g.easy_r1=g.easy_r2=g.easy_r3
                 =g.med_r1=g.med_r2=g.med_r3
@@ -1150,12 +1118,8 @@ int checkKeys(XEvent *e)
             g.hard_r2 ^= 1;
             break;
         case XK_9:
-            for (int i=0; i<4; i++) {
-                for (int j=0; j<5; j++) {
-                    cards[i][j].flip = 0; 
-                    cards[i][j].match = 0;
-                }
-            } 
+            // reset the cards
+			resetCards(4, 5, cards);
             g.random = 1;
             g.easy_r1=g.easy_r2=g.easy_r3
                 =g.med_r1=g.med_r2=g.med_r3
