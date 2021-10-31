@@ -5,11 +5,15 @@
 
 #include "fonts.h"
 #include <stdio.h>
+#include <string>
 #include <stdlib.h>
 #include <string.h>
 #include <GL/glx.h>
 #include <iostream>
 #include "global.h"
+using namespace std;
+
+#define BUTTON_NUM 9
 
 extern struct Card cards[5][8];
 
@@ -23,19 +27,47 @@ typedef struct t_button {
 	float dcolor[3];
 	unsigned int text_color;
 } Button;
-Button button [3];
+Button button [BUTTON_NUM];
 int buttonNum = 0;
 
 void initialize_buttons() 
 {
 	//initialize buttons...
-	buttonNum = 0;
+	// int left = 100;
+	// // char r_number[32];
+	// for (int i= 0; i < BUTTON_NUM; i++) {
+	// 	button[i].r.width = 200;
+	// 	button[i].r.height = 100;
+	// 	button[i].r.left = left + 200;
+	// 	button[i].r.bot = 30;
+	// 	button[i].r.right =
+	// 		button[i].r.left + button[i].r.width;
+	// 	button[i].r.top = button[i].r.bot + button[i].r.height;
+	// 	button[i].r.centerx =
+	// 		(button[i].r.left + button[i].r.right) / 2;
+	// 	button[i].r.centery =
+	// 		(button[i].r.bot + button[i].r.top) / 2;
+	// 	strcpy(button[i].text, "Easy: Round: ");
+	// 	// sprintf(r_number, "%d", i);
+	// 	// strcpy(button[i].text, r_number);
+	// 	button[i].down = 0;
+	// 	button[i].click = 0;
+	// 	button[i].color[0] = 1.0f;
+	// 	button[i].color[1] = 1.0f;
+	// 	button[i].color[2] = 1.0f;
+	// 	button[i].dcolor[0] = button[i].color[0] * 0.5f;
+	// 	button[i].dcolor[1] = button[i].color[1] * 0.5f;
+	// 	button[i].dcolor[2] = button[i].color[2] * 0.5f;
+	// 	button[i].text_color = 0x00ffffff;
+	// }
 
-	// Round 1 Button position
-	button[buttonNum].r.width = 200;
-	button[buttonNum].r.height = 100;
+	//Round 1 Button position
+	buttonNum = 0;
+	int width = 200;
+	button[buttonNum].r.width = width;
+	button[buttonNum].r.height = 75;
 	button[buttonNum].r.left = 100;
-	button[buttonNum].r.bot = 30;
+	button[buttonNum].r.bot = 205;
 	button[buttonNum].r.right =
 		button[buttonNum].r.left + button[buttonNum].r.width;
 	button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
@@ -46,8 +78,80 @@ void initialize_buttons()
 	strcpy(button[buttonNum].text, "Easy: Round 1");
 	button[buttonNum].down = 0;
 	button[buttonNum].click = 0;
+	button[buttonNum].color[0] = 0.0f;
+	button[buttonNum].color[1] = 0.0f;
+	button[buttonNum].color[2] = 0.0f;
+	button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.6f;
+	button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.7f;
+	button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
+	button[buttonNum].text_color = 0x00ffffff;
+	buttonNum++;
+
+	// Round 2 Button position
+	button[buttonNum].r.width = width;
+	button[buttonNum].r.height = 75;
+	button[buttonNum].r.left = 450;
+	button[buttonNum].r.bot = 205;
+	button[buttonNum].r.right =
+		button[buttonNum].r.left + button[buttonNum].r.width;
+	button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
+	button[buttonNum].r.centerx =
+		(button[buttonNum].r.left + button[buttonNum].r.right) / 2;
+	button[buttonNum].r.centery =
+		(button[buttonNum].r.bot + button[buttonNum].r.top) / 2;
+	strcpy(button[buttonNum].text, "Easy: Round 2");
+	button[buttonNum].down = 0;
+	button[buttonNum].click = 0;
+	button[buttonNum].color[0] = 0.0f;
+	button[buttonNum].color[1] = 0.0f;
+	button[buttonNum].color[2] = 0.0f;
+	button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
+	button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
+	button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
+	button[buttonNum].text_color = 0x00ffffff;
+	buttonNum++;
+
+	// Round 3 Button position
+	button[buttonNum].r.width = width;
+	button[buttonNum].r.height = 75;
+	button[buttonNum].r.left = 800;
+	button[buttonNum].r.bot = 205;
+	button[buttonNum].r.right =
+		button[buttonNum].r.left + button[buttonNum].r.width;
+	button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
+	button[buttonNum].r.centerx =
+		(button[buttonNum].r.left + button[buttonNum].r.right) / 2;
+	button[buttonNum].r.centery =
+		(button[buttonNum].r.bot + button[buttonNum].r.top) / 2;
+	strcpy(button[buttonNum].text, "Easy: Round 3");
+	button[buttonNum].down = 0;
+	button[buttonNum].click = 0;
+	button[buttonNum].color[0] = 0.9f;
+	button[buttonNum].color[1] = 0.58f;
+	button[buttonNum].color[2] = 0.5f;
+	button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
+	button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
+	button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
+	button[buttonNum].text_color = 0x00ffffff;
+	buttonNum++;
+
+	// Medium Round 1 Button
+	button[buttonNum].r.width = width;
+	button[buttonNum].r.height = 75;
+	button[buttonNum].r.left = 100;
+	button[buttonNum].r.bot = 125;
+	button[buttonNum].r.right =
+		button[buttonNum].r.left + button[buttonNum].r.width;
+	button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
+	button[buttonNum].r.centerx =
+		(button[buttonNum].r.left + button[buttonNum].r.right) / 2;
+	button[buttonNum].r.centery =
+		(button[buttonNum].r.bot + button[buttonNum].r.top) / 2;
+	strcpy(button[buttonNum].text, "Medium: Round 1");
+	button[buttonNum].down = 0;
+	button[buttonNum].click = 0;
 	button[buttonNum].color[0] = 1.0f;
-	button[buttonNum].color[1] = 1.0f;
+	button[buttonNum].color[1] = 0.3f;
 	button[buttonNum].color[2] = 1.0f;
 	button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
 	button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
@@ -55,11 +159,11 @@ void initialize_buttons()
 	button[buttonNum].text_color = 0x00ffffff;
 	buttonNum++;
 
-	// Round 2 Button position
-	button[buttonNum].r.width = 200;
-	button[buttonNum].r.height = 100;
+	// Medium Round 2 Button
+	button[buttonNum].r.width = width;
+	button[buttonNum].r.height = 75;
 	button[buttonNum].r.left = 450;
-	button[buttonNum].r.bot = 30;
+	button[buttonNum].r.bot = 125;
 	button[buttonNum].r.right =
 		button[buttonNum].r.left + button[buttonNum].r.width;
 	button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
@@ -71,19 +175,91 @@ void initialize_buttons()
 	button[buttonNum].down = 0;
 	button[buttonNum].click = 0;
 	button[buttonNum].color[0] = 1.0f;
-	button[buttonNum].color[1] = 0.5f;
-	button[buttonNum].color[2] = 0.0f;
+	button[buttonNum].color[1] = 0.3f;
+	button[buttonNum].color[2] = 1.0f;
 	button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
 	button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
 	button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
 	button[buttonNum].text_color = 0x00ffffff;
 	buttonNum++;
 
-	// Round 3 Button position
-	button[buttonNum].r.width = 200;
-	button[buttonNum].r.height = 100;
+	// Medium Round 3 Button
+	button[buttonNum].r.width = width;
+	button[buttonNum].r.height = 75;
 	button[buttonNum].r.left = 800;
-	button[buttonNum].r.bot = 30;
+	button[buttonNum].r.bot = 125;
+	button[buttonNum].r.right =
+		button[buttonNum].r.left + button[buttonNum].r.width;
+	button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
+	button[buttonNum].r.centerx =
+		(button[buttonNum].r.left + button[buttonNum].r.right) / 2;
+	button[buttonNum].r.centery =
+		(button[buttonNum].r.bot + button[buttonNum].r.top) / 2;
+	strcpy(button[buttonNum].text, "Medium: Round 3");
+	button[buttonNum].down = 0;
+	button[buttonNum].click = 0;
+	button[buttonNum].color[0] = 1.0f;
+	button[buttonNum].color[1] = 0.3f;
+	button[buttonNum].color[2] = 1.0f;
+	button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
+	button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
+	button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
+	button[buttonNum].text_color = 0x00ffffff;
+	buttonNum++;
+
+	// Hard Round 1 Button
+	button[buttonNum].r.width = width;
+	button[buttonNum].r.height = 75;
+	button[buttonNum].r.left = 100;
+	button[buttonNum].r.bot = 45;
+	button[buttonNum].r.right =
+		button[buttonNum].r.left + button[buttonNum].r.width;
+	button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
+	button[buttonNum].r.centerx =
+		(button[buttonNum].r.left + button[buttonNum].r.right) / 2;
+	button[buttonNum].r.centery =
+		(button[buttonNum].r.bot + button[buttonNum].r.top) / 2;
+	strcpy(button[buttonNum].text, "Hard: Round 1");
+	button[buttonNum].down = 0;
+	button[buttonNum].click = 0;
+	button[buttonNum].color[0] = 1.0f;
+	button[buttonNum].color[1] = 0.3f;
+	button[buttonNum].color[2] = 1.0f;
+	button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
+	button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
+	button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
+	button[buttonNum].text_color = 0x00ffffff;
+	buttonNum++;
+
+	// Hard Round 2 Button
+	button[buttonNum].r.width = width;
+	button[buttonNum].r.height = 75;
+	button[buttonNum].r.left = 450;
+	button[buttonNum].r.bot = 45;
+	button[buttonNum].r.right =
+		button[buttonNum].r.left + button[buttonNum].r.width;
+	button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
+	button[buttonNum].r.centerx =
+		(button[buttonNum].r.left + button[buttonNum].r.right) / 2;
+	button[buttonNum].r.centery =
+		(button[buttonNum].r.bot + button[buttonNum].r.top) / 2;
+	strcpy(button[buttonNum].text, "Hard: Round 2");
+	button[buttonNum].down = 0;
+	button[buttonNum].click = 0;
+	button[buttonNum].color[0] = 1.0f;
+	button[buttonNum].color[1] = 0.3f;
+	button[buttonNum].color[2] = 1.0f;
+	button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
+	button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
+	button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
+	button[buttonNum].text_color = 0x00ffffff;
+	buttonNum++;
+
+	// Medium Round 3 Button
+	button[buttonNum].r.width = width;
+	button[buttonNum].r.height = 75;
+	button[buttonNum].r.left = 800;
+	button[buttonNum].r.bot = 45;
 	button[buttonNum].r.right =
 		button[buttonNum].r.left + button[buttonNum].r.width;
 	button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
@@ -94,9 +270,9 @@ void initialize_buttons()
 	strcpy(button[buttonNum].text, "Hard: Round 3");
 	button[buttonNum].down = 0;
 	button[buttonNum].click = 0;
-	button[buttonNum].color[0] = 0.5f;
+	button[buttonNum].color[0] = 1.0f;
 	button[buttonNum].color[1] = 0.3f;
-	button[buttonNum].color[2] = 0.9f;
+	button[buttonNum].color[2] = 1.0f;
 	button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
 	button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
 	button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
@@ -105,28 +281,49 @@ void initialize_buttons()
 }
 
 void mouse_over_button(int action, int* menu, int* round1, int* round2
-	, int* round3) 
+	, int* round3, int* med1, int* med2, int* med3, int* hard1,
+	int* hard2, int* hard3)
 {
-	for (int i = 0; i < buttonNum; i++){
-		if (action == 1) {
-			if (button[i].over) {
-				button[i].down = 1;
-				button[i].click = 1;
-				*menu ^= 1;
-				// go to round
-				if (i == 0){
-					*round1 ^= 1;
-				}
-				if (i == 1){
-					*round2 ^= 1;
-				}
-				if (i == 2){
-					*round3 ^= 1;
-				}
-				for (int i=0; i<5; i++) {
-					for (int j=0; j<8; j++) {
-						cards[i][j].flip = 0;
-						cards[i][j].match = 0;
+	if (*menu == 1) {
+		for (int i = 0; i < buttonNum; i++){
+			if (action == 1) {
+				if (button[i].over) {
+					button[i].down = 1;
+					button[i].click = 1;
+					*menu ^= 1;
+					// go to round
+					if (i == 0){
+						*round1 ^= 1;
+					}
+					if (i == 1){
+						*round2 ^= 1;
+					}
+					if (i == 2){
+						*round3 ^= 1;
+					}
+					if (i == 3) {
+						*med1 ^= 1;
+					}
+					if (i == 4) {
+						*med2 ^= 1;
+					}
+					if (i == 5) {
+						*med3 ^= 1;
+					}
+					if (i == 6) {
+						*hard1 ^= 1;
+					}
+					if (i == 7) {
+						*hard2 ^= 1;
+					}
+					if (i == 8) {
+						*hard3 ^= 1;
+					}
+					for (int i=0; i<5; i++) {
+						for (int j=0; j<8; j++) {
+							cards[i][j].flip = 0;
+							cards[i][j].match = 0;
+						}
 					}
 				}
 			}
@@ -178,7 +375,7 @@ void draw_buttons()
 			glVertex2i(button[i].r.right, button[i].r.bot);
 		glEnd();
 		r.left = button[i].r.centerx;
-		r.bot  = button[i].r.centery-8;
+		r.bot  = button[i].r.centery - 8;
 		r.center = 1;
 		if (button[i].down) {
 			ggprint16(&r, 0, button[i].text_color, "Goodluck!");

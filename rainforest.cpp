@@ -90,7 +90,8 @@ void extern flipCard(int,int,int,int,float,float,int,Card cards[][8]);
 void resetCards(int, int, Card cards[][8]);
 
 extern void initialize_buttons();
-extern void mouse_over_button(int, int*, int*, int*, int*);
+extern void mouse_over_button(int, int*, int*, int*, int*, int*, int*, int*,
+	int*, int*, int*);
 extern void hover_button(int, int);
 extern void draw_buttons();
 
@@ -157,7 +158,7 @@ Image img[9] = {
 "./images/back2.png",
 "./images/witch.png",
 "./images/queen.jpg",
-"./images/Menu.jpg",
+"./images/menu.png",
 };
 
 Image card[10] = {
@@ -939,8 +940,10 @@ void init() {
 void mouse_click(int action)
 {
 
-	mouse_over_button(action, &g.Startscreen, &g.easy_r1, &g.easy_r2
-		, &g.easy_r3);		
+	mouse_over_button(action, &g.Startscreen, 
+		&g.easy_r1, &g.easy_r2, &g.easy_r3, 
+		&g.med_r1, &g.med_r2, &g.med_r3, 
+		&g.hard_r1, &g.hard_r2, &g.hard_r3);		
 
 }
 
@@ -1904,6 +1907,7 @@ void render()
     } 
 */
 	if (g.Startscreen){
+		glPushMatrix();
 		glBindTexture(GL_TEXTURE_2D, g.StartTexture);
 		glBegin(GL_QUADS);
 			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
@@ -1911,11 +1915,12 @@ void render()
 			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
 			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
 		glEnd();
-
+		glPopMatrix();
+		
 		// Draw Buttons
 		draw_buttons();
 		
-		unsigned int c = 0x00ffff44;
+		unsigned int c = 0x000000ff;
 		r.bot = g.yres - 20;
 		r.left = 10;
 		r.center = 0;
@@ -1939,7 +1944,6 @@ void render()
 		ggprint8b(&r, h, c, "D - Deflection");
 		ggprint8b(&r, h, c, "N - Sounds");
 		ggprint8b(&r, h, 0x00ff0000, "Press c for credits");
-		glPopMatrix();  
 	}
 
 	// if (g.flippedTwo == 1) {
