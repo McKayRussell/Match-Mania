@@ -1712,7 +1712,7 @@ void render()
         makeCards(3,5,g.start_x,g.start_y);
         randomHelper(3,5,g.medium1); 
         drawBack(3,5,g.cardTexture,cards);    
-        matchPairs(3,5,cards);
+        matchTriplets(3,5,cards);
         win_message(3,5);
    
         ggprint16(&r, h, c, "Match triplets (3 cards)");	  
@@ -1729,7 +1729,7 @@ void render()
         makeCards(4,6,g.start_x,g.start_y);
         randomHelper(4,6,g.medium2); 
         drawBack(4,6,g.cardTexture,cards);    
-        matchPairs(4,6,cards);
+        matchTriplets(4,6,cards);
         win_message(4,6);
          
         ggprint16(&r, h, c, "Match triplets (3 cards)");	 
@@ -1747,7 +1747,7 @@ void render()
         makeCards(5,6,g.start_x,g.start_y);
         randomHelper(5,6,g.medium3); 
         drawBack(5,6,g.cardTexture,cards);    
-        matchPairs(5,6,cards);
+        matchTriplets(5,6,cards);
         win_message(5,6);
    
         ggprint16(&r, h, c, "Match triplets (3 cards)");	
@@ -1765,7 +1765,7 @@ void render()
         makeCards(4,5,g.start_x,g.start_y);
         randomHelper(4,5,g.hard1); 
         drawBack(4,5,g.cardTexture,cards);    
-        matchPairs(4,5,cards);
+        matchQuadruplets(4,5,cards);
         win_message(4,5);
    
         ggprint16(&r, h, c, "Match quadruplets (4 cards)"); 
@@ -1783,7 +1783,7 @@ void render()
         makeCards(4,7,g.start_x,g.start_y);
         randomHelper(4,7,g.hard2); 
         drawBack(4,7,g.cardTexture,cards);    
-        matchPairs(4,7,cards);
+        matchQuadruplets(4,7,cards);
         win_message(4,7);
    
         ggprint16(&r, h, c, "Match quadruplets (4 cards)"); 
@@ -1801,7 +1801,7 @@ void render()
         makeCards(4,8,g.start_x,g.start_y);
         randomHelper(4,8,g.hard3); 
         drawBack(4,8,g.cardTexture,cards);    
-        matchPairs(4,8,cards);
+        matchQuadruplets(4,8,cards);
         win_message(4,8);
    
         ggprint16(&r, h, c, "Match quadruplets (4 cards)");
