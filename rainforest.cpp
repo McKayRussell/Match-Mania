@@ -27,7 +27,7 @@
 #include <unistd.h>
 #include <bits/stdc++.h>
 #include "global.h"
-#include <omp.h>
+// #include <omp.h>
 using namespace std;
 
 //defined types
