@@ -27,7 +27,7 @@
 #include <unistd.h>
 #include <bits/stdc++.h>
 #include "global.h"
-
+#include <omp.h>
 using namespace std;
 
 //defined types
@@ -91,9 +91,11 @@ void resetCards(int, int, Card cards[][8]);
 
 extern void initialize_buttons();
 extern void mouse_over_button(int, int*, int*, int*, int*, int*, int*, int*,
-	int*, int*, int*);
-extern void hover_button(int, int);
-extern void draw_buttons();
+	int*, int*, int*, int*);
+extern void hover_button(int, int, int*);
+extern void draw_menu_buttons();
+extern void initialize_clock();
+extern void draw_clock();
 
 
 class Image {
@@ -934,6 +936,8 @@ void init() {
 
 	//initialize buttons...
 	initialize_buttons();
+	//initialize_clock
+	initialize_clock();
 
 }
 // Mouse Button Clicked
@@ -943,7 +947,7 @@ void mouse_click(int action)
 	mouse_over_button(action, &g.Startscreen, 
 		&g.easy_r1, &g.easy_r2, &g.easy_r3, 
 		&g.med_r1, &g.med_r2, &g.med_r3, 
-		&g.hard_r1, &g.hard_r2, &g.hard_r3);		
+		&g.hard_r1, &g.hard_r2, &g.hard_r3, &g.random);		
 
 }
 
@@ -1009,7 +1013,7 @@ void checkMouse(XEvent *e)
 	}
 
 	// Check if mouse over sqaure
-	hover_button(savex, savey);
+	hover_button(savex, savey, &g.Startscreen);
 
 	if (g.lrbutton)
 		mouse_click(1);
@@ -1629,6 +1633,9 @@ void render()
     int h = 25;
      
     if (g.easy_r1) {
+		// omp_set_num_threads(2);
+		// #pragma omp parallel
+		// {
         drawBackground(g.xres,g.yres,g.forestTexture);
        
          
@@ -1661,9 +1668,15 @@ void render()
         drawBack(3,4,g.cardTexture,cards);    
         matchPairs(3,4,cards);
         win_message(3,4);
-      
+
+		// #pragma omp master
+		// {
+		// 	draw_clock();
+		// }
+
         ggprint16(&r, h, c, "Match pairs (2 cards)");	
 		ggprint16(&r, h, c, "Press 1 for Menu");
+		// }
    	}
      
     if (g.easy_r2) {
@@ -1918,7 +1931,7 @@ void render()
 		glPopMatrix();
 		
 		// Draw Buttons
-		draw_buttons();
+		draw_menu_buttons();
 		
 		unsigned int c = 0x000000ff;
 		r.bot = g.yres - 20;

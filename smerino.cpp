@@ -11,11 +11,15 @@
 #include <GL/glx.h>
 #include <iostream>
 #include "global.h"
+#include <unistd.h>
 using namespace std;
 
-#define BUTTON_NUM 9
+#define BUTTON_NUM 10
 
 extern struct Card cards[5][8];
+void resetCards(int, int, Card cards[][8]);
+
+int clock_square;
 
 typedef struct t_button {
 	Rect r;
@@ -29,6 +33,16 @@ typedef struct t_button {
 } Button;
 Button button [BUTTON_NUM];
 int buttonNum = 0;
+
+class t_square {
+public:
+	Rect r;
+	char time[32];
+	int blink;
+	float clock_color[3];
+	float clock_dcolor[3];
+	unsigned int clock_text_color;
+} square;
 
 void initialize_buttons() 
 {
@@ -255,7 +269,7 @@ void initialize_buttons()
 	button[buttonNum].text_color = 0x00ffffff;
 	buttonNum++;
 
-	// Medium Round 3 Button
+	// Hard Round 3 Button
 	button[buttonNum].r.width = width;
 	button[buttonNum].r.height = 75;
 	button[buttonNum].r.left = 800;
@@ -278,22 +292,78 @@ void initialize_buttons()
 	button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
 	button[buttonNum].text_color = 0x00ffffff;
 	buttonNum++;
+
+/*********************************************************************
+ * 
+ * Exits Buttons
+ * NOTE : Working on condensing this into for loops but this unable to
+ * 			do so
+ * 
+ * *******************************************************************/
+	// Easy Round 1 Exit Button
+	// button[buttonNum].r.width = width;
+	// button[buttonNum].r.height = 75;
+	// button[buttonNum].r.left = 800;
+	// button[buttonNum].r.bot = 25;
+	// button[buttonNum].r.right =
+	// 	button[buttonNum].r.left + button[buttonNum].r.width;
+	// button[buttonNum].r.top = button[buttonNum].r.bot + button[buttonNum].r.height;
+	// button[buttonNum].r.centerx =
+	// 	(button[buttonNum].r.left + button[buttonNum].r.right) / 2;
+	// button[buttonNum].r.centery =
+	// 	(button[buttonNum].r.bot + button[buttonNum].r.top) / 2;
+	// strcpy(button[buttonNum].text, "Back to Menu");
+	// button[buttonNum].down = 0;
+	// button[buttonNum].click = 0;
+	// button[buttonNum].color[0] = 1.0f;
+	// button[buttonNum].color[1] = 0.3f;
+	// button[buttonNum].color[2] = 1.0f;
+	// button[buttonNum].dcolor[0] = button[buttonNum].color[0] * 0.5f;
+	// button[buttonNum].dcolor[1] = button[buttonNum].color[1] * 0.5f;
+	// button[buttonNum].dcolor[2] = button[buttonNum].color[2] * 0.5f;
+	// button[buttonNum].text_color = 0x00ffffff;
+	// buttonNum++;
+}
+
+void initialize_clock() 
+{
+	square.r.width = 200;
+	square.r.height = 75;
+	square.r.left = 100;
+	square.r.bot = 205;
+	square.r.right =
+		square.r.left + square.r.width;
+	square.r.top = square.r.bot + square.r.height;
+	square.r.centerx = (square.r.left + square.r.right) / 2;
+	square.r.centery = (square.r.bot + square.r.top) / 2;
+	strcpy(square.time, "Ready!");
+	square.clock_color[0] = 0.0f;
+	square.clock_color[1] = 0.0f;
+	square.clock_color[2] = 0.0f;
+	square.clock_dcolor[0] = square.clock_color[0] * 0.0f;
+	square.clock_dcolor[1] = square.clock_color[1] * 0.0f;
+	square.clock_dcolor[2] = square.clock_color[2] * 0.0f;
+	square.clock_text_color = 0x00ffffff;
+	square.blink = 0;
 }
 
 void mouse_over_button(int action, int* menu, int* round1, int* round2
 	, int* round3, int* med1, int* med2, int* med3, int* hard1,
-	int* hard2, int* hard3)
+	int* hard2, int* hard3, int* rand)
 {
 	if (*menu == 1) {
-		for (int i = 0; i < buttonNum; i++){
+		for (int i = 0; i < buttonNum; i++) {
 			if (action == 1) {
 				if (button[i].over) {
 					button[i].down = 1;
 					button[i].click = 1;
 					*menu ^= 1;
+					*rand = 1;
 					// go to round
 					if (i == 0){
 						*round1 ^= 1;
+						resetCards(3, 4, cards);
+						break;
 					}
 					if (i == 1){
 						*round2 ^= 1;
@@ -329,27 +399,52 @@ void mouse_over_button(int action, int* menu, int* round1, int* round2
 			}
 		}
 	}
+
+// 	if (*round1 && action && button[9].over) { 
+// 		button[9].down = 1;
+// 		button[9].click = 1;
+// 		*key_press = XK_1;
+// 		cout << *key_press << " and " << *round1 << endl;
+// 	}
 }
 
-void hover_button (int x, int y)
+
+void hover_button (int x, int y, int* menu)
 {
-	for (int i = 0; i < buttonNum; i++) {
-		button[i].over = 0;
-		button[i].down = 0;
-		if (x >= button[i].r.left &&
-			x <= button[i].r.right &&
-			y >= button[i].r.bot &&
-			y <= button[i].r.top) {
-				button[i].over = 1;
-				break;
+	if (*menu == 1) {
+		for (int i = 0; i < 9; i++) {
+			button[i].over = 0;
+			button[i].down = 0;
+			if (x >= button[i].r.left &&
+				x <= button[i].r.right &&
+				y >= button[i].r.bot &&
+				y <= button[i].r.top) {
+					button[i].over = 1;
+					break;
+			}
 		}
 	}
+
+	// Exit button in rounds
+	// if (*menu == 0) {
+	// 	for (int i = 9; i < BUTTON_NUM; i++) {
+	// 		button[i].over = 0;
+	// 		button[i].down = 0;
+	// 		if (x >= button[i].r.left &&
+	// 			x <= button[i].r.right &&
+	// 			y >= button[i].r.bot &&
+	// 			y <= button[i].r.top) {
+	// 				button[i].over = 1;
+	// 				break;
+	// 		}
+	// 	}
+	// }
 }
 
-void draw_buttons() 
+void draw_menu_buttons() 
 {
 	Rect r;
-	for (int i=0; i<buttonNum; i++) {
+	for (int i=0; i< buttonNum; i++) {
 		if (button[i].over) {
 			glColor3f(1.0f, 0.0f, 0.0f);
 			//draw a highlight around button
@@ -382,6 +477,89 @@ void draw_buttons()
 		} else {
 			ggprint16(&r, 0, button[i].text_color, button[i].text);
 		}
+	}
+}
+
+/*********************************************************************
+ * 
+ * Trying to create a timer
+ * NOTE : Tried to make this task multithreaded: 1 thread handles the clock
+ * 	so the rest of the application doesnt wait wehn calling sleep(); 
+ *  Did not work
+ * 
+ * 
+ * *******************************************************************/
+
+// void draw_clock() 
+// {
+// 	Rect r;
+// 	for (int i = 0; i < 10; i++) {
+// 		if (i < 35) {
+// 			square.blink = 1;
+// 		}
+// 		if (square.blink) {
+// 			glColor3f(1.0f, 0.0f, 0.0f);
+// 			//draw a highlight around button
+// 			glLineWidth(2);
+// 			glBegin(GL_LINE_LOOP);
+// 				glVertex2i(square.r.left-2,  square.r.bot-2);
+// 				glVertex2i(square.r.left-2,  square.r.top+2);
+// 				glVertex2i(square.r.right+2, square.r.top+2);
+// 				glVertex2i(square.r.right+2, square.r.bot-2);
+// 				glVertex2i(square.r.left-2,  square.r.bot-2);
+// 			glEnd();
+// 			glLineWidth(1);
+// 		}
+// 		sleep(1);
+// 		// ggprint16(&r, 0, square.clock_text_color, ("%d seconds remaining!", i));
+// 	}
+
+// 	glBegin(GL_QUADS);
+// 		glVertex2i(square.r.left,  square.r.bot);
+// 		glVertex2i(square.r.left,  square.r.top);
+// 		glVertex2i(square.r.right, square.r.top);
+// 		glVertex2i(square.r.right, square.r.bot);
+// 	glEnd();
+// 	r.left = square.r.centerx;
+// 	r.bot  = square.r.centery - 8;
+// 	r.center = 1;
+// }
+
+void draw_exit_button(int round)
+{
+	Rect r;
+	round = round + 8;
+	if (button[round].over) {
+		glColor3f(1.0f, 0.0f, 0.0f);
+		//draw a highlight around button
+		glLineWidth(2);
+		glBegin(GL_LINE_LOOP);
+			glVertex2i(button[round].r.left-2,  button[round].r.bot-2);
+			glVertex2i(button[round].r.left-2,  button[round].r.top+2);
+			glVertex2i(button[round].r.right+2, button[round].r.top+2);
+			glVertex2i(button[round].r.right+2, button[round].r.bot-2);
+			glVertex2i(button[round].r.left-2,  button[round].r.bot-2);
+		glEnd();
+		glLineWidth(1);
+	}
+	if (button[round].down) {
+		glColor3fv(button[round].dcolor);
+	} else {
+		glColor3fv(button[round].color);
+	}
+	glBegin(GL_QUADS);
+		glVertex2i(button[round].r.left,  button[round].r.bot);
+		glVertex2i(button[round].r.left,  button[round].r.top);
+		glVertex2i(button[round].r.right, button[round].r.top);
+		glVertex2i(button[round].r.right, button[round].r.bot);
+	glEnd();
+	r.left = button[round].r.centerx;
+	r.bot  = button[round].r.centery - 8;
+	r.center = 1;
+	if (button[round].down) {
+		ggprint16(&r, 0, button[round].text_color, "Goodluck!");
+	} else {
+		ggprint16(&r, 0, button[round].text_color, button[round].text);
 	}
 }
 
