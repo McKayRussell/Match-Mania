@@ -20,13 +20,14 @@ void show_mckays_credits(int x, int y)
 void flipCard(int mx, int my, int row, int col, float st_x, float st_y,
     int yres, Card cards[][8])
 {
-	float x = st_x-40; 
-    float y = ((st_y+85)/yres)+25;
+	float x = st_x - 40; 
+    float y = ((st_y + 85) / yres) + 25;
+    y = yres - 685;
   
 	for (int i = 0; i < row; i++) {
 		for (int j = 0; j < col; j++) {
-			if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
-					&& my < y+(130 * i)+120)
+			if (mx > x + (100 * j) && mx < x + (100 * j) + 85 &&
+                my > y + (130 * i) && my < y + (130 * i) + 120)
 			{
                 cards[i][j].flip = 1;  
 			}
