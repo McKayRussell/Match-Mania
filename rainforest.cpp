@@ -1895,48 +1895,51 @@ void render()
 		
 		// Draw Buttons
 		draw_menu_buttons();
+
+		glDisable(GL_TEXTURE_2D);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_TEXTURE_2D);
+		if (g.show_credits){
+			glBindTexture(GL_TEXTURE_2D, g.creditsTexture);
+			glBegin(GL_QUADS);
+				glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
+				glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
+				glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
+				glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
+			glEnd();
+
+			show_mckays_credits(g.xres / 2, g.yres / 2);
+			show_dat_credits(g.xres / 2, g.yres / 2);
+			show_steven_credits(g.xres / 2, g.yres / 2);
+			show_clementes_credits(g.xres / 2, g.yres / 2);
+		}
 		
 		unsigned int c = 0x000000ff;
 		r.bot = g.yres - 20;
 		r.left = 10;
 		r.center = 0;
 		int h = 12;
-		ggprint8b(&r, h, c, "1 - Round 1 (easy)");
-		ggprint8b(&r, h, c, "2 - Round 2 (easy)");    
-		ggprint8b(&r, h, c, "3 - Round 3 (easy)");
-        ggprint8b(&r, h, c, "4 - Round 1 (medium)");
-		ggprint8b(&r, h, c, "5 - Round 2 (medium)");    
-		ggprint8b(&r, h, c, "6 - Round 3 (medium)");
-	    ggprint8b(&r, h, c, "7 - Round 1 (hard)");
-		ggprint8b(&r, h, c, "8 - Round 2 (hard)");    
-		ggprint8b(&r, h, c, "9 - Round 3 (hard)");
-	    ggprint8b(&r, h, c, "0 - Witch");
-	    ggprint8b(&r, h, c, "B - Bigfoot");
-        ggprint8b(&r, h, c, "F - Forest");
-		ggprint8b(&r, h, c, "S - Silhouette");
-		ggprint8b(&r, h, c, "T - Trees");
-		ggprint8b(&r, h, c, "U - Umbrella");
-		ggprint8b(&r, h, c, "R - Rain");
-		ggprint8b(&r, h, c, "D - Deflection");
-		ggprint8b(&r, h, c, "N - Sounds");
-		ggprint8b(&r, h, 0x00ff0000, "Press c for credits");
+		// ggprint8b(&r, h, c, "1 - Round 1 (easy)");
+		// ggprint8b(&r, h, c, "2 - Round 2 (easy)");    
+		// ggprint8b(&r, h, c, "3 - Round 3 (easy)");
+        // ggprint8b(&r, h, c, "4 - Round 1 (medium)");
+		// ggprint8b(&r, h, c, "5 - Round 2 (medium)");    
+		// ggprint8b(&r, h, c, "6 - Round 3 (medium)");
+	    // ggprint8b(&r, h, c, "7 - Round 1 (hard)");
+		// ggprint8b(&r, h, c, "8 - Round 2 (hard)");    
+		// ggprint8b(&r, h, c, "9 - Round 3 (hard)");
+	    // ggprint8b(&r, h, c, "0 - Witch");
+	    // ggprint8b(&r, h, c, "B - Bigfoot");
+        // ggprint8b(&r, h, c, "F - Forest");
+		// ggprint8b(&r, h, c, "S - Silhouette");
+		// ggprint8b(&r, h, c, "T - Trees");
+		// ggprint8b(&r, h, c, "U - Umbrella");
+		// ggprint8b(&r, h, c, "R - Rain");
+		// ggprint8b(&r, h, c, "D - Deflection");
+		// ggprint8b(&r, h, c, "N - Sounds");
+		ggprint16(&r, h, 0x00ff0000, "Press c for credits");
+		ggprint8b(&r, h, c, "Press esc key to exit");
 	}
-
-
-    if (g.show_credits){
-        glBindTexture(GL_TEXTURE_2D, g.creditsTexture);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
-			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
-			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
-			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
-		glEnd();
-
-		show_mckays_credits(g.xres / 2, g.yres / 2);
-        show_dat_credits(g.xres / 2, g.yres / 2);
-        show_steven_credits(g.xres / 2, g.yres / 2);
-        show_clementes_credits(g.xres / 2, g.yres / 2);
-    }
 
 	glDisable(GL_TEXTURE_2D);
 	
@@ -1951,6 +1954,6 @@ void render()
 		drawUmbrella();
 	glBindTexture(GL_TEXTURE_2D, 0);
 	//
-	}
+}
 
 
