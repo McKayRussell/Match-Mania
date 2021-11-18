@@ -16,11 +16,11 @@ extern void pickCard(int,int,int);
 void test(int row, int col, Card cards[][8])
 {
     for (int i=0; i<row; i++) {
-		for (int j=0; j<col; j++) {	
+	for (int j=0; j<col; j++) {	
             cards[i][j].flip = 5;
             //cout << cards[i][j].id << endl;
         }
-	}
+    }
 }
 
 void show_dat_credits(int x, int y)
