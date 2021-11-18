@@ -97,6 +97,9 @@ extern void draw_menu_buttons();
 extern void initialize_clock();
 extern void draw_clock();
 
+extern void win_message(int, int, int*, int*, int*);
+extern void set_seasonal_theme(GLuint, int, int);
+
 
 class Image {
 public:
@@ -151,7 +154,7 @@ public:
 			unlink(ppmname);
 	}
 };
-Image img[9] = {
+Image img[11] = {
 "./images/bigfoot.png",
 "./images/pic.png",
 "./images/front2.PNG",
@@ -161,6 +164,8 @@ Image img[9] = {
 "./images/witch.png",
 "./images/queen.jpg",
 "./images/menu.png",
+"./images/thanksgiv.png",
+"./images/christmas.png"
 };
 
 Image card[10] = {
@@ -190,6 +195,7 @@ public:
     GLuint cardTexture;
 	GLuint cardFront; 
 	GLuint StartTexture;
+	GLuint thanksgiving;
     //cards
     GLuint card1Texture;
     GLuint card2Texture;
@@ -213,6 +219,7 @@ public:
     int easy_r1, easy_r2, easy_r3, med_r1, med_r2, med_r3, hard_r1, hard_r2, hard_r3;
 	//int flipped;
 	int Startscreen;
+	int thanksgivingSwitch;
 	// int flippedTwo;
 	int lrbutton;
 	//int cardRow;
@@ -253,6 +260,7 @@ public:
 		//cardRow = 0;
 		//cardCol = 0;
 		Startscreen = 1;
+		thanksgivingSwitch = 0;
 		lrbutton = 0; 
         random = 0; 
         //starting pts of cards layout  
@@ -586,6 +594,7 @@ void initOpengl(void)
     glGenTextures(1, &g.cardTexture); 
 	glGenTextures(1, &g.cardFront);
 	glGenTextures(1, &g.StartTexture);
+	glGenTextures(1, &g.thanksgiving);
     //
     //cards
     glGenTextures(1, &g.card1Texture); 
@@ -762,8 +771,21 @@ void initOpengl(void)
 	
 
 	//-------------------------------------------------------------------------
+
+	//-------------------------------------------------------------------------
+	//Thanksgiving Theme
+	
+    glBindTexture(GL_TEXTURE_2D, g.thanksgiving);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, img[9].width, img[9].height,
+									0, GL_RGB, GL_UNSIGNED_BYTE, img[9].data);
+	
+
+	//-------------------------------------------------------------------------
+
 	//back of card
-	//
+	
 	
     int w2 = img[5].width;
 	int h2 = img[5].height;
@@ -1197,6 +1219,7 @@ int checkKeys(XEvent *e)
 				ndrops = 0;
 			break;
 		case XK_n:
+			g.thanksgivingSwitch ^= 1;
 			break;
 		case XK_w:
 			if (shift) {
@@ -1563,47 +1586,6 @@ void pickCard(int i, int j, int id) {
     }
 }
 
-//Dat
-//leaving this function here to test and improve designs on a victory later...
-void win_message(int row, int col) {    
-    int count = 0;
-    for (int i=0; i<row; i++) {
-        for (int j=0; j<col; j++) {
-            if (cards[i][j].match == 1) 
-                count++;
-        }
-    }    
-    Rect r; 
-    r.bot = g.yres-150;
-    r.left = g.xres/2-50;
-    r.center = 0;
-	        
-    if (count == row*col) {
-        g.witch = 1;
-        //g.showBigfoot =1;
-        ggprint16(&r, 0, 0x00000000, "YOU WIN!!! <3");
-    } 
-}
-/*
-//McKay Russell
-//inputs: mouse x coordinate, mouse y coordinate
-
-void flipCard(int mx, int my, int row, int col)
-{
-	float x = g.start_x-40; 
-    float y = ((g.start_y+85)/g.yres)+25;
-  
-	for (int i = 0; i < row; i++) {
-		for (int j = 0; j < col; j++) {
-			if (mx > x+(100 * j) && mx < x+(100 * j)+85 && my > y+(130 * i)
-					&& my < y+(130 * i)+120)
-			{
-                cards[i][j].flip = 1;  
-			}
-        }
-	}
-}  
-*/
 
 void render()
 {
@@ -1636,7 +1618,12 @@ void render()
 		// omp_set_num_threads(2);
 		// #pragma omp parallel
 		// {
-        drawBackground(g.xres,g.yres,g.forestTexture);
+		if (g.thanksgivingSwitch) {
+			set_seasonal_theme(g.thanksgiving, g.yres, g.xres);
+		}
+		else{
+			drawBackground(g.xres,g.yres,g.forestTexture);
+		}
        
          
         if (g.random == 1) {  
@@ -1667,7 +1654,7 @@ void render()
         randomHelper(3,4,g.easy1); 
         drawBack(3,4,g.cardTexture,cards);    
         matchPairs(3,4,cards);
-        win_message(3,4);
+        win_message(3,4, &g.yres, &g.xres, &g.witch);
 
 		// #pragma omp master
 		// {
@@ -1676,6 +1663,7 @@ void render()
 
         ggprint16(&r, h, c, "Match pairs (2 cards)");	
 		ggprint16(&r, h, c, "Press 1 for Menu");
+		ggprint16(&r, h, c, "Press n to change theme");
 		// }
    	}
      
@@ -1691,7 +1679,7 @@ void render()
         randomHelper(4,4,g.easy2); 
         drawBack(4,4,g.cardTexture,cards);    
         matchPairs(4,4,cards);
-        win_message(4,4);
+        win_message(4,4, &g.yres, &g.xres, &g.witch);
    
         ggprint16(&r, h, c, "Press 2 for Menu");
 	    ggprint16(&r, h, c, "Match pairs (2 cards)");	
@@ -1709,7 +1697,7 @@ void render()
         randomHelper(4,5,g.easy3); 
         drawBack(4,5,g.cardTexture,cards);    
         matchPairs(4,5,cards);
-        win_message(4,5);
+        win_message(4,5, &g.yres, &g.xres, &g.witch);
          
         ggprint16(&r, h, c, "Match pairs (2 cards)");	
         ggprint16(&r, h, c, "Press 3 for Menu");
@@ -1726,7 +1714,7 @@ void render()
         randomHelper(3,5,g.medium1); 
         drawBack(3,5,g.cardTexture,cards);    
         matchTriplets(3,5,cards);
-        win_message(3,5);
+        win_message(3,5, &g.yres, &g.xres, &g.witch);
    
         ggprint16(&r, h, c, "Match triplets (3 cards)");	  
 		ggprint16(&r, h, c, "Press 4 for Menu");
@@ -1743,7 +1731,7 @@ void render()
         randomHelper(4,6,g.medium2); 
         drawBack(4,6,g.cardTexture,cards);    
         matchTriplets(4,6,cards);
-        win_message(4,6);
+        win_message(4,6, &g.yres, &g.xres, &g.witch);
          
         ggprint16(&r, h, c, "Match triplets (3 cards)");	 
         ggprint16(&r, h, c, "Press 5 for Menu");
@@ -1761,7 +1749,7 @@ void render()
         randomHelper(5,6,g.medium3); 
         drawBack(5,6,g.cardTexture,cards);    
         matchTriplets(5,6,cards);
-        win_message(5,6);
+        win_message(5,6, &g.yres, &g.xres, &g.witch);
    
         ggprint16(&r, h, c, "Match triplets (3 cards)");	
         ggprint16(&r, h, c, "Press 6 for Menu");
@@ -1779,7 +1767,7 @@ void render()
         randomHelper(4,5,g.hard1); 
         drawBack(4,5,g.cardTexture,cards);    
         matchQuadruplets(4,5,cards);
-        win_message(4,5);
+        win_message(4,5, &g.yres, &g.xres, &g.witch);
    
         ggprint16(&r, h, c, "Match quadruplets (4 cards)"); 
         ggprint16(&r, h, c, "Press 7 for Menu");
@@ -1797,7 +1785,7 @@ void render()
         randomHelper(4,7,g.hard2); 
         drawBack(4,7,g.cardTexture,cards);    
         matchQuadruplets(4,7,cards);
-        win_message(4,7);
+        win_message(4,7, &g.yres, &g.xres, &g.witch);
    
         ggprint16(&r, h, c, "Match quadruplets (4 cards)"); 
         ggprint16(&r, h, c, "Press 8 for Menu");
@@ -1815,7 +1803,7 @@ void render()
         randomHelper(4,8,g.hard3); 
         drawBack(4,8,g.cardTexture,cards);    
         matchQuadruplets(4,8,cards);
-        win_message(4,8);
+        win_message(4,8, &g.yres, &g.xres, &g.witch);
    
         ggprint16(&r, h, c, "Match quadruplets (4 cards)");
         ggprint16(&r, h, c, "Press 9 for Menu");
@@ -1900,27 +1888,12 @@ void render()
 		glDisable(GL_ALPHA_TEST);
 	}
  
-/*
-	if (g.flipped == 1) {
-    
-		float x = g.xres/2;
-		float y = g.yres-100.0;
-		int w = 45.0;
-		// printf("cardCol: %d, cardRow: %d ", g.cardCol, g.cardRow);
-		glPushMatrix();		
-        glTranslatef(x+(g.cardCol*(w*2+10)), y-(g.cardRow*(w*2+40)), 0);
-		glBindTexture(GL_TEXTURE_2D, g.cardFront);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 1.0f); glVertex2i(-w,-w);
-			glTexCoord2f(0.0f, 0.0f); glVertex2i(-w, w+30);
-			glTexCoord2f(1.0f, 0.0f); glVertex2i( w, w+30);
-			glTexCoord2f(1.0f, 1.0f); glVertex2i( w,-w);
-		glEnd();
-		glPopMatrix();  
-    } 
-*/
+
 	if (g.Startscreen){
-		glPushMatrix();
+		        glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
+        glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
+        glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
+        glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
 		glBindTexture(GL_TEXTURE_2D, g.StartTexture);
 		glBegin(GL_QUADS);
 			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
@@ -1933,77 +1906,50 @@ void render()
 		// Draw Buttons
 		draw_menu_buttons();
 		
-		glDisable(GL_TEXTURE_2D);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_TEXTURE_2D);
-		if (g.show_credits){
-			glBindTexture(GL_TEXTURE_2D, g.creditsTexture);
-			glBegin(GL_QUADS);
-				glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
-				glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
-				glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
-				glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
-			glEnd();
-
-			show_mckays_credits(g.xres / 2, g.yres / 2);
-			show_dat_credits(g.xres / 2, g.yres / 2);
-			show_steven_credits(g.xres / 2, g.yres / 2);
-			show_clementes_credits(g.xres / 2, g.yres / 2);
-		}
-
 		unsigned int c = 0x000000ff;
 		r.bot = g.yres - 20;
 		r.left = 10;
 		r.center = 0;
 		int h = 12;
-		// ggprint8b(&r, h, c, "1 - Round 1 (easy)");
-		// ggprint8b(&r, h, c, "2 - Round 2 (easy)");    
-		// ggprint8b(&r, h, c, "3 - Round 3 (easy)");
-        // ggprint8b(&r, h, c, "4 - Round 1 (medium)");
-		// ggprint8b(&r, h, c, "5 - Round 2 (medium)");    
-		// ggprint8b(&r, h, c, "6 - Round 3 (medium)");
-	    // ggprint8b(&r, h, c, "7 - Round 1 (hard)");
-		// ggprint8b(&r, h, c, "8 - Round 2 (hard)");    
-		// ggprint8b(&r, h, c, "9 - Round 3 (hard)");
-	    // ggprint8b(&r, h, c, "0 - Witch");
-	    // ggprint8b(&r, h, c, "B - Bigfoot");
-        // ggprint8b(&r, h, c, "F - Forest");
-		// ggprint8b(&r, h, c, "S - Silhouette");
-		// ggprint8b(&r, h, c, "T - Trees");
-		// ggprint8b(&r, h, c, "U - Umbrella");
-		// ggprint8b(&r, h, c, "R - Rain");
-		// ggprint8b(&r, h, c, "D - Deflection");
-		// ggprint8b(&r, h, c, "N - Sounds");
-		ggprint16(&r, h, 0x00ff0000, "Press c for credits");
-		ggprint8b(&r, h, c, "Press esc key to exit");
+		ggprint8b(&r, h, c, "1 - Round 1 (easy)");
+		ggprint8b(&r, h, c, "2 - Round 2 (easy)");    
+		ggprint8b(&r, h, c, "3 - Round 3 (easy)");
+        ggprint8b(&r, h, c, "4 - Round 1 (medium)");
+		ggprint8b(&r, h, c, "5 - Round 2 (medium)");    
+		ggprint8b(&r, h, c, "6 - Round 3 (medium)");
+	    ggprint8b(&r, h, c, "7 - Round 1 (hard)");
+		ggprint8b(&r, h, c, "8 - Round 2 (hard)");    
+		ggprint8b(&r, h, c, "9 - Round 3 (hard)");
+	    ggprint8b(&r, h, c, "0 - Witch");
+	    ggprint8b(&r, h, c, "B - Bigfoot");
+        ggprint8b(&r, h, c, "F - Forest");
+		ggprint8b(&r, h, c, "S - Silhouette");
+		ggprint8b(&r, h, c, "T - Trees");
+		ggprint8b(&r, h, c, "U - Umbrella");
+		ggprint8b(&r, h, c, "R - Rain");
+		ggprint8b(&r, h, c, "D - Deflection");
+		ggprint8b(&r, h, c, "N - Sounds");
+		ggprint8b(&r, h, 0x00ff0000, "Press c for credits");
 	}
 
-	// if (g.flippedTwo == 1) {
-	// 	float x = g.xres/2;
-	// 	float y = g.yres-100.0;
-	// 	int w = 45.0;
-	// 	// printf("cardCol: %d, cardRow: %d ", g.cardCol, g.cardRow);
-	// 	glPushMatrix();
-	// 	glTranslatef(x+(g.cardCol*(w*2+10)), y-(g.cardRow*(w*2+40)), 0);
-	// 	glBindTexture(GL_TEXTURE_2D, g.cardFront);
-	// 	glBegin(GL_QUADS);
-	// 		glTexCoord2f(0.0f, 1.0f); glVertex2i(-w,-w);
-	// 		glTexCoord2f(0.0f, 0.0f); glVertex2i(-w, w+30);
-	// 		glTexCoord2f(1.0f, 0.0f); glVertex2i( w, w+30);
-	// 		glTexCoord2f(1.0f, 1.0f); glVertex2i( w,-w);
-	// 	glEnd();
-	// 	glPopMatrix();
-	// }
+
+    if (g.show_credits){
+        glBindTexture(GL_TEXTURE_2D, g.creditsTexture);
+		glBegin(GL_QUADS);
+			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
+			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
+			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
+			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
+		glEnd();
+
+		show_mckays_credits(g.xres / 2, g.yres / 2);
+        show_dat_credits(g.xres / 2, g.yres / 2);
+        show_steven_credits(g.xres / 2, g.yres / 2);
+        show_clementes_credits(g.xres / 2, g.yres / 2);
+    }
 
 	glDisable(GL_TEXTURE_2D);
-	//glColor3f(1.0f, 0.0f, 0.0f);
-	//glBegin(GL_QUADS);
-	//	glVertex2i(10,10);
-	//	glVertex2i(10,60);
-	//	glVertex2i(60,60);
-	//	glVertex2i(60,10);
-	//glEnd();
-	//return;
+	
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
 	if (g.showRain)
