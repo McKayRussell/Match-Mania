@@ -96,6 +96,7 @@ extern void hover_button(int, int, int*);
 extern void draw_menu_buttons();
 extern void initialize_clock();
 extern void draw_clock();
+extern void draw_start_screen(int, int, GLuint);
 
 extern void win_message(int, int, int*, int*, int*);
 extern void set_seasonal_theme(GLuint, int, int);
@@ -1890,18 +1891,7 @@ void render()
  
 
 	if (g.Startscreen){
-		        glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
-        glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
-        glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
-        glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
-		glBindTexture(GL_TEXTURE_2D, g.StartTexture);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
-			glTexCoord2f(0.0f, 0.0f); glVertex2i(0, g.yres);
-			glTexCoord2f(1.0f, 0.0f); glVertex2i(g.xres, g.yres);
-			glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
-		glEnd();
-		glPopMatrix();
+		draw_start_screen(g.yres, g.xres, g.StartTexture);
 		
 		// Draw Buttons
 		draw_menu_buttons();

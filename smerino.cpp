@@ -441,6 +441,23 @@ void hover_button (int x, int y, int* menu)
 	// }
 }
 
+void draw_start_screen(int yres, int xres, GLuint start)
+{
+	glPushMatrix();
+	glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
+	glTexCoord2f(0.0f, 0.0f); glVertex2i(0, yres);
+	glTexCoord2f(1.0f, 0.0f); glVertex2i(xres, yres);
+	glTexCoord2f(1.0f, 1.0f); glVertex2i(xres, 0);
+	glBindTexture(GL_TEXTURE_2D, start);
+	glBegin(GL_QUADS);
+		glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
+		glTexCoord2f(0.0f, 0.0f); glVertex2i(0, yres);
+		glTexCoord2f(1.0f, 0.0f); glVertex2i(xres, yres);
+		glTexCoord2f(1.0f, 1.0f); glVertex2i(xres, 0);
+	glEnd();
+	glPopMatrix();
+}
+
 void draw_menu_buttons() 
 {
 	Rect r;
