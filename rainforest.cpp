@@ -1,5 +1,5 @@
 //program: rainforest.cpp
-//author:  Gordon Griesel
+///author:  Gordon Griesel
 //date:    2013 to 2021
 //
 //This program demonstrates the use of OpenGL and XWindows
@@ -98,7 +98,8 @@ extern void initialize_clock();
 extern void draw_clock();
 extern void draw_start_screen(int, int, GLuint);
 
-extern void win_message(int, int, int*, int*, int*);
+//extern void win_message(int, int, int*, int*, int*, int*);
+extern int scoreboard(int, int, int*, int*, int*, Card cards[][8]);
 extern void set_seasonal_theme(GLuint, int, int);
 
 
@@ -155,18 +156,20 @@ public:
 			unlink(ppmname);
 	}
 };
-Image img[11] = {
+Image img[13] = {
 "./images/bigfoot.png",
 "./images/pic.png",
 "./images/front2.PNG",
 "./images/umbrella.png",
 "./images/credits.png",
-"./images/back2.png",
+"./images/back2.png", 
 "./images/witch.png",
 "./images/queen.jpg",
 "./images/menu.png",
-"./images/thanksgiv.png",
-"./images/christmas.png"
+"./images/thanks2.jpg",
+"./images/christmas.jpg",
+"./images/back5.jpg",
+"./images/back4.jpg"
 };
 
 Image card[10] = {
@@ -194,9 +197,12 @@ public:
 	GLuint umbrellaTexture;
 	GLuint creditsTexture;
     GLuint cardTexture;
-	GLuint cardFront; 
+	GLuint back2Texture;
+    GLuint back3Texture;
+    GLuint cardFront; 
 	GLuint StartTexture;
 	GLuint thanksgiving;
+    GLuint christmas;
     //cards
     GLuint card1Texture;
     GLuint card2Texture;
@@ -228,6 +234,7 @@ public:
     float start_x;
     float start_y;
     int random;
+    int score;
     //
     // DIFFICULTY 
     // (easy mode)
@@ -258,12 +265,11 @@ public:
         show_credits=0;
 	    easy_r1=easy_r2=easy_r3=med_r1=med_r2=med_r3=hard_r1=hard_r2=hard_r3=0;   
         witch=0;
-		//cardRow = 0;
-		//cardCol = 0;
 		Startscreen = 1;
 		thanksgivingSwitch = 0;
-		lrbutton = 0; 
-        random = 0; 
+        lrbutton = 0; 
+        random = 0;
+        score = 0; 
         //starting pts of cards layout  
 	    start_x = 100; //65
 	    start_y = yres-75;    
@@ -592,10 +598,15 @@ void initOpengl(void)
 	glGenTextures(1, &g.forestTexture);
 	glGenTextures(1, &g.umbrellaTexture);
     glGenTextures(1, &g.creditsTexture);
+    //
     glGenTextures(1, &g.cardTexture); 
-	glGenTextures(1, &g.cardFront);
+	glGenTextures(1, &g.back2Texture); 
+    glGenTextures(1, &g.back3Texture); 
+    //
+    glGenTextures(1, &g.cardFront);
 	glGenTextures(1, &g.StartTexture);
 	glGenTextures(1, &g.thanksgiving);
+    glGenTextures(1, &g.christmas);
     //
     //cards
     glGenTextures(1, &g.card1Texture); 
@@ -772,7 +783,14 @@ void initOpengl(void)
 	
 
 	//-------------------------------------------------------------------------
-
+	//Christmas Theme
+	
+    glBindTexture(GL_TEXTURE_2D, g.christmas);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, img[10].width, img[10].height,
+									0, GL_RGB, GL_UNSIGNED_BYTE, img[10].data);
+	
 	//-------------------------------------------------------------------------
 	//Thanksgiving Theme
 	
@@ -780,10 +798,9 @@ void initOpengl(void)
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 	glTexImage2D(GL_TEXTURE_2D, 0, 3, img[9].width, img[9].height,
-									0, GL_RGB, GL_UNSIGNED_BYTE, img[9].data);
-	
-
-	//-------------------------------------------------------------------------
+									0, GL_RGB, GL_UNSIGNED_BYTE, img[9].data);	
+    
+    //-------------------------------------------------------------------------
 
 	//back of card
 	
@@ -807,7 +824,33 @@ void initOpengl(void)
 									0, GL_RGB, GL_UNSIGNED_BYTE, img[4].data);
 	    */
     //-------------------------------------------------------------------------
-	//front of card
+	//thanksgiving card back
+    //
+    w2 = img[11].width;
+	h2 = img[11].height;
+	//
+	glBindTexture(GL_TEXTURE_2D, g.back2Texture);
+	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, w2, h2, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, img[11].data); 
+    glBindTexture(GL_TEXTURE_2D, 0);
+    //-------------------------------------------------------------------------
+	//thanksgiving card back
+    //
+    w2 = img[12].width;
+	h2 = img[12].height;
+	//
+	glBindTexture(GL_TEXTURE_2D, g.back3Texture);
+	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, w2, h2, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, img[12].data); 
+    glBindTexture(GL_TEXTURE_2D, 0);
+    //------------------------------------------------------------------------- 
+    //front of card
 	//
 	
 	// if we want to change the width or height to the actual width or height
@@ -1059,104 +1102,115 @@ int checkKeys(XEvent *e)
 		return 0;
 	}
 	switch (key) {
+        case XK_q:
+            //menu
+            g.score = 0;
+			resetCards(3, 4, cards);
+            g.random = 1;
+            g.easy_r1=g.easy_r2=g.easy_r3
+                =g.med_r1=g.med_r2=g.med_r3
+                =g.hard_r1=g.hard_r2=g.hard_r3=0;
+            g.witch = g.showBigfoot = 0; 
+            g.Startscreen = 1; 
+            break;
         case XK_1:
 			// reset the cards
 			resetCards(3, 4, cards);
             g.random = 1;
+            g.score = 0;
             g.easy_r2=g.easy_r3
                 =g.med_r1=g.med_r2=g.med_r3
                 =g.hard_r1=g.hard_r2=g.hard_r3=0;
-            g.witch = g.showBigfoot = 0; 
-            g.Startscreen ^= 1;
-            g.easy_r1 ^= 1;
+            g.witch = g.showBigfoot = g.Startscreen = 0;
+            g.easy_r1 = 1;
             break;
         case XK_2:
 			// reset the cards
 			resetCards(5, 8, cards);
-            g.random = 1; 
+            g.random = 1;
+            g.score = 0; 
             g.easy_r1=g.easy_r3
                 =g.med_r1=g.med_r2=g.med_r3
                 =g.hard_r1=g.hard_r2=g.hard_r3=0;
-            g.witch = g.showBigfoot = 0;
-			g.Startscreen ^= 1;
-            g.easy_r2 ^= 1;
+            g.witch = g.showBigfoot = g.Startscreen = 0;
+            g.easy_r2 = 1;
             break;
         case XK_3:
             // reset the cards
 			resetCards(5, 8, cards);
             g.random = 1;
+            g.score = 0;
             g.easy_r1=g.easy_r2
                 =g.med_r1=g.med_r2=g.med_r3
                 =g.hard_r1=g.hard_r2=g.hard_r3=0;
-            g.witch = g.showBigfoot = 0;
-			g.Startscreen ^= 1;
-            g.easy_r3 ^= 1;
+            g.witch = g.showBigfoot = g.Startscreen = 0;
+            g.easy_r3 = 1;
             break; 
         case XK_4:
             // reset the cards
 			resetCards(4, 5, cards);
             g.random = 1;
+            g.score = 0;
             g.easy_r1=g.easy_r2=g.easy_r3
                 =g.med_r2=g.med_r3=g.hard_r1
                 =g.hard_r2=g.hard_r3=0;
-            g.witch = g.showBigfoot = 0;
-			g.Startscreen ^= 1;
-            g.med_r1 ^= 1;
+            g.witch = g.showBigfoot = g.Startscreen = 0;
+            g.med_r1 = 1;
             break;
         case XK_5:
             // reset the cards
 			resetCards(4, 5, cards);
             g.random = 1;
+            g.score = 0;
             g.easy_r1=g.easy_r2=g.easy_r3
                 =g.med_r1=g.med_r3
                 =g.hard_r1=g.hard_r2=g.hard_r3=0;
-            g.witch = g.showBigfoot = 0;
-			g.Startscreen ^= 1;
-            g.med_r2 ^= 1;
+            g.witch = g.showBigfoot = g.Startscreen = 0;
+            g.med_r2 = 1;
             break;
         case XK_6:
             // reset the cards
 			resetCards(4, 5, cards);
             g.random = 1;
+            g.score = 0;
             g.easy_r1=g.easy_r2=g.easy_r3
                 =g.med_r1=g.med_r2
                 =g.hard_r1=g.hard_r2=g.hard_r3=0;
-            g.witch = g.showBigfoot = 0; 
-			g.Startscreen ^= 1;
-            g.med_r3 ^= 1;
+            g.witch = g.showBigfoot = g.Startscreen = 0;
+            g.med_r3 = 1;
             break;
         case XK_7:
             // reset the cards
 			resetCards(4, 5, cards);
             g.random = 1;
+            g.score = 0;
             g.easy_r1=g.easy_r2=g.easy_r3
                 =g.med_r1=g.med_r2=g.med_r3
                 =g.hard_r2=g.hard_r3=0;
-            g.witch = g.showBigfoot = 0; 
-			g.Startscreen ^= 1;
-            g.hard_r1 ^= 1;
+            g.witch = g.showBigfoot = g.Startscreen = 0;
+            g.hard_r1 = 1;
             break;
         case XK_8:
             // reset the cards
 			resetCards(4, 5, cards);
             g.random = 1;
+            g.score = 0;
             g.easy_r1=g.easy_r2=g.easy_r3
                 =g.med_r1=g.med_r2=g.med_r3
                 =g.hard_r1=g.hard_r3=0;
-            g.witch = g.showBigfoot = 0; 
-			g.Startscreen ^= 1;
-            g.hard_r2 ^= 1;
+            g.witch = g.showBigfoot = g.Startscreen = 0;
+            g.hard_r2 = 1;
             break;
         case XK_9:
             // reset the cards
 			resetCards(4, 5, cards);
             g.random = 1;
+            g.score = 0;
             g.easy_r1=g.easy_r2=g.easy_r3
                 =g.med_r1=g.med_r2=g.med_r3
                 =g.hard_r1=g.hard_r2=0;
-            g.witch = g.showBigfoot = 0; 
-			g.Startscreen ^= 1;
-            g.hard_r3 ^= 1;
+            g.witch = g.showBigfoot = g.Startscreen = 0;
+            g.hard_r3 = 1;
             break; 
         case XK_c:
             g.show_credits ^= 1;
@@ -1587,7 +1641,6 @@ void pickCard(int i, int j, int id) {
     }
 }
 
-
 void render()
 {
     Rect r;
@@ -1609,24 +1662,32 @@ void render()
 	// 		glTexCoord2f(1.0f, 1.0f); glVertex2i(g.xres, 0);
 	// 	glEnd(); 
 	// }
+    
+    //scoreboard
+    /*
+    Rect s;
+    unsigned int c2 = 0x00ffffff;    
+    s.bot = g.yres-50;
+    s.left = g.xres-150;
+    int h2 = 10; */
+    //
+    //win message
+    Rect w;
+    unsigned int c3 = 0x00000000;    
+    w.bot = g.yres-150;
+    w.left = g.xres/2-50;
+    w.center = 0;
+    //
+    //normal text
     unsigned int c = 0x00ffff44;    
     r.bot = 60;
     r.left = g.xres/2;  
     r.center = 10;
     int h = 25;
-     
-    if (g.easy_r1) {
-		// omp_set_num_threads(2);
-		// #pragma omp parallel
-		// {
-		if (g.thanksgivingSwitch) {
-			set_seasonal_theme(g.thanksgiving, g.yres, g.xres);
-		}
-		else{
-			drawBackground(g.xres,g.yres,g.forestTexture);
-		}
        
-         
+    if (g.easy_r1) {
+        set_seasonal_theme(g.forestTexture, g.yres, g.xres);
+       
         if (g.random == 1) {  
             //randomize cards
             random_shuffle(g.easy1, g.easy1 + 3*4);
@@ -1655,22 +1716,27 @@ void render()
         randomHelper(3,4,g.easy1); 
         drawBack(3,4,g.cardTexture,cards);    
         matchPairs(3,4,cards);
-        win_message(3,4, &g.yres, &g.xres, &g.witch);
-
+        
 		// #pragma omp master
 		// {
 		// 	draw_clock();
 		// }
+        //
+        int count = scoreboard(3,4,&g.xres,&g.yres,&g.score,cards);
 
+        if (count == 3*4) {
+            g.witch = 1;
+            g.trees = 1;
+            ggprint16(&w, 0, c3, "YOU WIN!!! <3");	 
+            
+        } 
         ggprint16(&r, h, c, "Match pairs (2 cards)");	
-		ggprint16(&r, h, c, "Press 1 for Menu");
-		ggprint16(&r, h, c, "Press n to change theme");
-		// }
+		ggprint16(&r, h, c, "Press 'Q' to quit");
    	}
      
     if (g.easy_r2) {
-	    drawBackground(g.xres,g.yres,g.forestTexture);
-     
+        set_seasonal_theme(g.forestTexture, g.yres, g.xres);
+ 	    
         if (g.random == 1) {  
             random_shuffle(g.easy2, g.easy2 + 4*4);
             g.random = 0;
@@ -1680,15 +1746,21 @@ void render()
         randomHelper(4,4,g.easy2); 
         drawBack(4,4,g.cardTexture,cards);    
         matchPairs(4,4,cards);
-        win_message(4,4, &g.yres, &g.xres, &g.witch);
-   
-        ggprint16(&r, h, c, "Press 2 for Menu");
-	    ggprint16(&r, h, c, "Match pairs (2 cards)");	
+        int count = scoreboard(4,4,&g.xres,&g.yres,&g.score,cards);
+
+        if (count == 4*4) {
+            g.witch = 1;
+            g.trees = 1;
+            ggprint16(&w, 0, c3, "YOU WIN!!! <3");	 
+            
+        } 
+	    ggprint16(&r, h, c, "Match pairs (2 cards)");
+        ggprint16(&r, h, c, "Press 'Q' to quit");	
     }
     
     if (g.easy_r3) {
-	    drawBackground(g.xres,g.yres,g.forestTexture);
-      
+	    set_seasonal_theme(g.forestTexture, g.yres, g.xres);
+ 
         if (g.random == 1) {  
             random_shuffle(g.easy3, g.easy3 + 4*5);
             g.random = 0;
@@ -1697,50 +1769,68 @@ void render()
         makeCards(4,5,g.start_x,g.start_y);
         randomHelper(4,5,g.easy3); 
         drawBack(4,5,g.cardTexture,cards);    
-        matchPairs(4,5,cards);
-        win_message(4,5, &g.yres, &g.xres, &g.witch);
-         
+        matchPairs(4,5,cards); 
+        int count = scoreboard(4,5,&g.xres,&g.yres,&g.score,cards);
+
+        if (count == 4*5) {
+            g.witch = 1;
+            g.trees = 1;
+            ggprint16(&w, 0, c3, "YOU WIN!!! <3");	 
+            
+        }  
         ggprint16(&r, h, c, "Match pairs (2 cards)");	
-        ggprint16(&r, h, c, "Press 3 for Menu");
+        ggprint16(&r, h, c, "Press 'Q' to quit");
 	}
    
     if (g.med_r1) {
-        drawBackground(g.xres,g.yres,g.forestTexture);
-      
+        set_seasonal_theme(g.thanksgiving, g.yres, g.xres);
+ 
         if (g.random == 1) {  
             random_shuffle(g.medium1, g.medium1 + 3*5);
             g.random = 0;
         } 
         makeCards(3,5,g.start_x,g.start_y);
         randomHelper(3,5,g.medium1); 
-        drawBack(3,5,g.cardTexture,cards);    
+        drawBack(3,5,g.back2Texture,cards);    
         matchTriplets(3,5,cards);
-        win_message(3,5, &g.yres, &g.xres, &g.witch);
-   
+        int count = scoreboard(3,5,&g.xres,&g.yres,&g.score,cards);
+
+        if (count == 3*5) {
+            g.witch = 1;
+            g.trees = 1;
+            ggprint16(&w, 0, c3, "YOU WIN!!! <3");	 
+            
+        } 
         ggprint16(&r, h, c, "Match triplets (3 cards)");	  
-		ggprint16(&r, h, c, "Press 4 for Menu");
+		ggprint16(&r, h, c, "Press 'Q' to quit");
 	}
 
     if (g.med_r2) {
-        drawBackground(g.xres,g.yres,g.forestTexture);
-      
+        set_seasonal_theme(g.thanksgiving, g.yres, g.xres);
+
         if (g.random == 1) {  
             random_shuffle(g.medium2, g.medium2 + 4*6);
             g.random = 0;
         } 
         makeCards(4,6,g.start_x,g.start_y);
         randomHelper(4,6,g.medium2); 
-        drawBack(4,6,g.cardTexture,cards);    
+        drawBack(4,6,g.back2Texture,cards);    
         matchTriplets(4,6,cards);
-        win_message(4,6, &g.yres, &g.xres, &g.witch);
-         
+        int count = scoreboard(4,6,&g.xres,&g.yres,&g.score,cards);
+
+        if (count == 4*6) {
+            g.witch = 1;
+            g.trees = 1;
+            ggprint16(&w, 0, c3, "YOU WIN!!! <3");	 
+            
+        } 
         ggprint16(&r, h, c, "Match triplets (3 cards)");	 
-        ggprint16(&r, h, c, "Press 5 for Menu");
+        ggprint16(&r, h, c, "Press 'Q' to quit");
 	}
 
     if (g.med_r3) {
-        drawBackground(g.xres,g.yres,g.forestTexture);
-      
+        set_seasonal_theme(g.thanksgiving, g.yres, g.xres);
+ 
         if (g.random == 1) {  
             random_shuffle(g.medium3, g.medium3 + 5*6);
             g.random = 0;
@@ -1748,17 +1838,24 @@ void render()
          
         makeCards(5,6,g.start_x,g.start_y);
         randomHelper(5,6,g.medium3); 
-        drawBack(5,6,g.cardTexture,cards);    
+        drawBack(5,6,g.back2Texture,cards);    
         matchTriplets(5,6,cards);
-        win_message(5,6, &g.yres, &g.xres, &g.witch);
-   
+        int count = scoreboard(5,6,&g.xres,&g.yres,&g.score,cards);
+
+        if (count == 5*6) {
+            g.witch = 1;
+            g.trees = 1;
+            ggprint16(&w, 0, c3, "YOU WIN!!! <3");	 
+            
+        } 
+ 
         ggprint16(&r, h, c, "Match triplets (3 cards)");	
-        ggprint16(&r, h, c, "Press 6 for Menu");
+        ggprint16(&r, h, c, "Press 'Q' to quit");
 	}
 
     if (g.hard_r1) { 
-        drawBackground(g.xres,g.yres,g.forestTexture);
-      
+        set_seasonal_theme(g.christmas, g.yres, g.xres);
+ 
         if (g.random == 1) {  
             random_shuffle(g.hard1, g.hard1 + 4*5);
             g.random = 0;
@@ -1766,17 +1863,24 @@ void render()
          
         makeCards(4,5,g.start_x,g.start_y);
         randomHelper(4,5,g.hard1); 
-        drawBack(4,5,g.cardTexture,cards);    
+        drawBack(4,5,g.back3Texture,cards);    
         matchQuadruplets(4,5,cards);
-        win_message(4,5, &g.yres, &g.xres, &g.witch);
-   
+        int count = scoreboard(4,5,&g.xres,&g.yres,&g.score,cards);
+
+        if (count == 4*5) {
+            g.witch = 1;
+            g.trees = 1;
+            ggprint16(&w, 0, c3, "YOU WIN!!! <3");	 
+            
+        } 
+ 
         ggprint16(&r, h, c, "Match quadruplets (4 cards)"); 
-        ggprint16(&r, h, c, "Press 7 for Menu");
+        ggprint16(&r, h, c, "Press 'Q' to quit");
 	}
 
     if (g.hard_r2) {
-        drawBackground(g.xres,g.yres,g.forestTexture);
-      
+        set_seasonal_theme(g.christmas, g.yres, g.xres);
+ 
         if (g.random == 1) {  
             random_shuffle(g.hard2, g.hard2 + 4*7);
             g.random = 0;
@@ -1784,17 +1888,24 @@ void render()
        
         makeCards(4,7,g.start_x,g.start_y);
         randomHelper(4,7,g.hard2); 
-        drawBack(4,7,g.cardTexture,cards);    
+        drawBack(4,7,g.back3Texture,cards);    
         matchQuadruplets(4,7,cards);
-        win_message(4,7, &g.yres, &g.xres, &g.witch);
-   
+        int count = scoreboard(4,7,&g.xres,&g.yres,&g.score,cards);
+
+        if (count == 4*7) {
+            g.witch = 1;
+            g.trees = 1;
+            ggprint16(&w, 0, c3, "YOU WIN!!! <3");	 
+            
+        } 
+ 
         ggprint16(&r, h, c, "Match quadruplets (4 cards)"); 
-        ggprint16(&r, h, c, "Press 8 for Menu");
+        ggprint16(&r, h, c, "Press 'Q' to quit");
 	}
 
     if (g.hard_r3) {
-        drawBackground(g.xres,g.yres,g.forestTexture);
-      
+        set_seasonal_theme(g.christmas, g.yres, g.xres);
+ 
         if (g.random == 1) {  
             random_shuffle(g.hard3, g.hard3 + 5*8);
             g.random = 0;
@@ -1802,12 +1913,19 @@ void render()
          
         makeCards(4,8,g.start_x,g.start_y);
         randomHelper(4,8,g.hard3); 
-        drawBack(4,8,g.cardTexture,cards);    
+        drawBack(4,8,g.back3Texture,cards);    
         matchQuadruplets(4,8,cards);
-        win_message(4,8, &g.yres, &g.xres, &g.witch);
-   
+        int count = scoreboard(4,8,&g.xres,&g.yres,&g.score,cards);
+
+        if (count == 4*8) {
+            g.witch = 1;
+            g.trees = 1;
+            ggprint16(&w, 0, c3, "YOU WIN!!! <3");	 
+            
+        } 
+ 
         ggprint16(&r, h, c, "Match quadruplets (4 cards)");
-        ggprint16(&r, h, c, "Press 9 for Menu");
+        ggprint16(&r, h, c, "Press 'Q' to quit");
 	}
     
     if (g.showBigfoot) {
