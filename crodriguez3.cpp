@@ -16,25 +16,36 @@ void show_clementes_credits(int x, int y)
     ggprint16(&r, 16, 0x00000000, "Clemente is caliente");
 }
 
-void win_message(int row, int col, int* yres, int* xres, int* witch) {    
+
+int scoreboard(int row, int col, int* xres, int* yres, int* score, 
+                                                            Card cards[][8])
+{    
     int count = 0;
     for (int i=0; i<row; i++) {
         for (int j=0; j<col; j++) {
-            if (cards[i][j].match == 1) 
+            if (cards[i][j].match == 1) {
                 count++;
+                if (cards[i][j].score == 0) { 
+                    cards[i][j].score = 1; 
+                    *score += 5;
+                }
+            }
         }
     }    
-    Rect r; 
-    r.bot = *yres-150;
-    r.left = *xres/2-50;
-    r.center = 0;
-	        
-    if (count == row*col) {
-        *witch = 1;
-        //g.showBigfoot =1;
-        ggprint16(&r, 0, 0x00000000, "YOU WIN!!! <3");
-    } 
+    
+    Rect s;
+    unsigned int c = 0x00ffffff;    
+    s.bot = *yres-50;
+    s.left = *xres-150;
+    int h = 10;
+      
+    ggprint8b(&s, h, c, "Scoreboard");
+    ggprint8b(&s, h, c, "----------------");
+    ggprint8b(&s, h, c, " %i", *score);
+  	
+    return count; //matched cards count
 }
+
 void set_seasonal_theme(GLuint thanksgiving, int yres, int xres)
 {
     glPushMatrix();
