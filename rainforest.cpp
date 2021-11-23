@@ -73,8 +73,7 @@ extern void show_dat_credits(int, int);
 extern void show_steven_credits(int, int);
 extern void show_clementes_credits(int, int);
 //
-Card cards[5][8];   //declaring struct from header file
-extern void drawBackground(int,int,GLuint); 
+Card cards[5][8];   //declaring struct from header file 
 extern void makeCards(int,int,int,int); 
 extern void drawCard(int,int,GLuint); 
 extern void drawBack(int,int,GLuint,Card cards[][8]); 
