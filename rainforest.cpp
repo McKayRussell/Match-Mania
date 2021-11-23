@@ -836,7 +836,7 @@ void initOpengl(void)
 		GL_RGB, GL_UNSIGNED_BYTE, img[11].data); 
     glBindTexture(GL_TEXTURE_2D, 0);
     //-------------------------------------------------------------------------
-	//thanksgiving card back
+	//christmas card back
     //
     w2 = img[12].width;
 	h2 = img[12].height;
