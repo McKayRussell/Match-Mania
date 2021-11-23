@@ -89,8 +89,9 @@ void extern flipCard(int,int,int,int,float,float,int,Card cards[][8]);
 void resetCards(int, int, Card cards[][8]);
 
 extern void initialize_buttons();
+//
 extern void mouse_over_button(int, int*, int*, int*, int*, int*, int*, int*,
-	int*, int*, int*, int*);
+	int*, int*, int*, int*, float*);
 extern void hover_button(int, int, int*);
 extern void draw_menu_buttons();
 extern void initialize_clock();
@@ -234,6 +235,8 @@ public:
     float start_y;
     int random;
     int score;
+    float time;
+    int pause;
     //
     // DIFFICULTY 
     // (easy mode)
@@ -269,6 +272,8 @@ public:
         lrbutton = 0; 
         random = 0;
         score = 0; 
+        time = 0;
+        pause = 0;
         //starting pts of cards layout  
 	    start_x = 100; //65
 	    start_y = yres-75;    
@@ -488,10 +493,15 @@ int main()
 		//1. Get the current time.
 		clock_gettime(CLOCK_REALTIME, &timeCurrent);
 		//2. How long since we were here last?
-        //printf("hi: %s\n", timeCurrent);
+        //printf("hi: %d\n", timeCurrent);
        
         timeSpan = timeDiff(&timeStart, &timeCurrent);
-		//3. Save the current time as our new starting time.
+        //printf("hi: %f\n", timeSpan);
+        //
+        /*g.time += timeSpan;
+        printf("hi: %f\n", g.time); */
+        
+        //3. Save the current time as our new starting time.
 		timeCopy(&timeStart, &timeCurrent);
 		//4. Add time-span to our countdown amount.
 		physicsCountdown += timeSpan;
@@ -836,7 +846,7 @@ void initOpengl(void)
 		GL_RGB, GL_UNSIGNED_BYTE, img[11].data); 
     glBindTexture(GL_TEXTURE_2D, 0);
     //-------------------------------------------------------------------------
-	//christmas card back
+	//thanksgiving card back
     //
     w2 = img[12].width;
 	h2 = img[12].height;
@@ -1012,7 +1022,7 @@ void mouse_click(int action)
 	mouse_over_button(action, &g.Startscreen, 
 		&g.easy_r1, &g.easy_r2, &g.easy_r3, 
 		&g.med_r1, &g.med_r2, &g.med_r3, 
-		&g.hard_r1, &g.hard_r2, &g.hard_r3, &g.random);		
+		&g.hard_r1, &g.hard_r2, &g.hard_r3, &g.random, &g.time);		
 
 }
 
@@ -1103,112 +1113,122 @@ int checkKeys(XEvent *e)
 	switch (key) {
         case XK_q:
             //menu
-            g.score = 0;
+            g.score = g.pause = 0;
 			resetCards(3, 4, cards);
             g.random = 1;
             g.easy_r1=g.easy_r2=g.easy_r3
                 =g.med_r1=g.med_r2=g.med_r3
                 =g.hard_r1=g.hard_r2=g.hard_r3=0;
-            g.witch = g.showBigfoot = 0; 
+            g.witch = g.showBigfoot = g.showRain = 0; 
             g.Startscreen = 1; 
             break;
         case XK_1:
-			// reset the cards
+		    g.time = 60; 
+            // reset the cards
 			resetCards(3, 4, cards);
             g.random = 1;
-            g.score = 0;
+            g.score = g.pause = 0;
+            //g.time = 60;
             g.easy_r2=g.easy_r3
                 =g.med_r1=g.med_r2=g.med_r3
                 =g.hard_r1=g.hard_r2=g.hard_r3=0;
-            g.witch = g.showBigfoot = g.Startscreen = 0;
+            g.witch = g.showBigfoot = g.Startscreen = g.showRain = 0;
             g.easy_r1 = 1;
             break;
         case XK_2:
-			// reset the cards
+			g.time = 75;
+            // reset the cards
 			resetCards(5, 8, cards);
             g.random = 1;
-            g.score = 0; 
+            g.score = g.pause = 0; 
             g.easy_r1=g.easy_r3
                 =g.med_r1=g.med_r2=g.med_r3
                 =g.hard_r1=g.hard_r2=g.hard_r3=0;
-            g.witch = g.showBigfoot = g.Startscreen = 0;
+            g.witch = g.showBigfoot = g.Startscreen = g.showRain = 0;
             g.easy_r2 = 1;
             break;
         case XK_3:
+            g.time = 90;
             // reset the cards
 			resetCards(5, 8, cards);
             g.random = 1;
-            g.score = 0;
+            g.score = g.pause = 0;
             g.easy_r1=g.easy_r2
                 =g.med_r1=g.med_r2=g.med_r3
                 =g.hard_r1=g.hard_r2=g.hard_r3=0;
-            g.witch = g.showBigfoot = g.Startscreen = 0;
+            g.witch = g.showBigfoot = g.Startscreen = g.showRain = 0;
             g.easy_r3 = 1;
             break; 
         case XK_4:
+            g.time = 90;
             // reset the cards
 			resetCards(4, 5, cards);
             g.random = 1;
-            g.score = 0;
+            g.score = g.pause = 0;
             g.easy_r1=g.easy_r2=g.easy_r3
                 =g.med_r2=g.med_r3=g.hard_r1
                 =g.hard_r2=g.hard_r3=0;
-            g.witch = g.showBigfoot = g.Startscreen = 0;
+            g.witch = g.showBigfoot = g.Startscreen = g.showRain = 0;
             g.med_r1 = 1;
             break;
         case XK_5:
+            g.time = 105;
             // reset the cards
 			resetCards(4, 5, cards);
             g.random = 1;
-            g.score = 0;
+            g.score = g.pause = 0;
             g.easy_r1=g.easy_r2=g.easy_r3
                 =g.med_r1=g.med_r3
                 =g.hard_r1=g.hard_r2=g.hard_r3=0;
-            g.witch = g.showBigfoot = g.Startscreen = 0;
+            g.witch = g.showBigfoot = g.Startscreen = g.showRain = 0;
             g.med_r2 = 1;
             break;
         case XK_6:
+            g.time = 120;
             // reset the cards
 			resetCards(4, 5, cards);
             g.random = 1;
-            g.score = 0;
+            g.score = g.pause = 0;
             g.easy_r1=g.easy_r2=g.easy_r3
                 =g.med_r1=g.med_r2
                 =g.hard_r1=g.hard_r2=g.hard_r3=0;
-            g.witch = g.showBigfoot = g.Startscreen = 0;
+            g.witch = g.showBigfoot = g.Startscreen = g.showRain = 0;
             g.med_r3 = 1;
             break;
         case XK_7:
+            g.time = 120;
             // reset the cards
 			resetCards(4, 5, cards);
             g.random = 1;
-            g.score = 0;
+            g.score = g.pause = 0;
             g.easy_r1=g.easy_r2=g.easy_r3
                 =g.med_r1=g.med_r2=g.med_r3
                 =g.hard_r2=g.hard_r3=0;
-            g.witch = g.showBigfoot = g.Startscreen = 0;
+            g.witch = g.showBigfoot = g.Startscreen = g.showRain = 0;
             g.hard_r1 = 1;
             break;
         case XK_8:
+            g.time = 150;
             // reset the cards
 			resetCards(4, 5, cards);
             g.random = 1;
-            g.score = 0;
+            g.score = g.pause = 0;
             g.easy_r1=g.easy_r2=g.easy_r3
                 =g.med_r1=g.med_r2=g.med_r3
                 =g.hard_r1=g.hard_r3=0;
-            g.witch = g.showBigfoot = g.Startscreen = 0;
+            g.witch = g.showBigfoot = g.Startscreen = g.showRain = 0;
             g.hard_r2 = 1;
             break;
         case XK_9:
+            g.time = 180;
             // reset the cards
 			resetCards(4, 5, cards);
             g.random = 1;
-            g.score = 0;
+            g.score = g.pause = 0;
             g.easy_r1=g.easy_r2=g.easy_r3
                 =g.med_r1=g.med_r2=g.med_r3
                 =g.hard_r1=g.hard_r2=0;
-            g.witch = g.showBigfoot = g.Startscreen = 0;
+            g.witch = g.showBigfoot = g.Startscreen = g.showRain = 0;
             g.hard_r3 = 1;
             break; 
         case XK_c:
@@ -1640,6 +1660,43 @@ void pickCard(int i, int j, int id) {
     }
 }
 
+//Dat
+void timer(int row, int col) 
+{     
+    Rect l;
+    unsigned int c = 0x00000000;    
+    l.bot = g.yres-150;
+    l.left = g.xres/2-50;
+    l.center = 0;
+ 
+    if (g.time > 0 && g.pause == 0) {
+        g.time -= timeSpan;
+        if (g.time < 0)
+            g.time = 0;
+    }
+
+    if (g.time == 0) {
+        g.showRain = 1;
+        ggprint16(&l, 0, c, "YOU LOSE!!! D:<");	 
+            
+	    for (int i=0; i<row; i++) {
+		    for (int j=0; j<col; j++) {	
+                cards[i][j].flip = 1;         
+	        }
+        } 
+    }
+    
+    Rect s;
+    unsigned int c2 = 0x00ffffff;    
+    s.bot = g.yres-100;
+    s.left = g.xres-100;
+    int h = 10;
+    //printf("time: %i\n", (int)g.time); 
+    ggprint8b(&s, h, c2, "Time");
+    ggprint8b(&s, h, c2, "--------");
+    ggprint8b(&s, h, c2, "%i", (int)g.time);
+}
+
 void render()
 {
     Rect r;
@@ -1715,7 +1772,7 @@ void render()
         randomHelper(3,4,g.easy1); 
         drawBack(3,4,g.cardTexture,cards);    
         matchPairs(3,4,cards);
-        
+        timer(3,4); 
 		// #pragma omp master
 		// {
 		// 	draw_clock();
@@ -1726,8 +1783,8 @@ void render()
         if (count == 3*4) {
             g.witch = 1;
             g.trees = 1;
+            g.pause = 1;
             ggprint16(&w, 0, c3, "YOU WIN!!! <3");	 
-            
         } 
         ggprint16(&r, h, c, "Match pairs (2 cards)");	
 		ggprint16(&r, h, c, "Press 'Q' to quit");
@@ -1745,13 +1802,14 @@ void render()
         randomHelper(4,4,g.easy2); 
         drawBack(4,4,g.cardTexture,cards);    
         matchPairs(4,4,cards);
+        timer(4,4); 
         int count = scoreboard(4,4,&g.xres,&g.yres,&g.score,cards);
 
         if (count == 4*4) {
             g.witch = 1;
             g.trees = 1;
-            ggprint16(&w, 0, c3, "YOU WIN!!! <3");	 
-            
+            g.pause = 1;
+            ggprint16(&w, 0, c3, "YOU WIN!!! <3");	  
         } 
 	    ggprint16(&r, h, c, "Match pairs (2 cards)");
         ggprint16(&r, h, c, "Press 'Q' to quit");	
@@ -1769,13 +1827,14 @@ void render()
         randomHelper(4,5,g.easy3); 
         drawBack(4,5,g.cardTexture,cards);    
         matchPairs(4,5,cards); 
+        timer(4,5); 
         int count = scoreboard(4,5,&g.xres,&g.yres,&g.score,cards);
 
         if (count == 4*5) {
             g.witch = 1;
             g.trees = 1;
-            ggprint16(&w, 0, c3, "YOU WIN!!! <3");	 
-            
+            g.pause = 1;
+            ggprint16(&w, 0, c3, "YOU WIN!!! <3");	       
         }  
         ggprint16(&r, h, c, "Match pairs (2 cards)");	
         ggprint16(&r, h, c, "Press 'Q' to quit");
@@ -1792,11 +1851,13 @@ void render()
         randomHelper(3,5,g.medium1); 
         drawBack(3,5,g.back2Texture,cards);    
         matchTriplets(3,5,cards);
+        timer(3,5); 
         int count = scoreboard(3,5,&g.xres,&g.yres,&g.score,cards);
-
+    
         if (count == 3*5) {
             g.witch = 1;
             g.trees = 1;
+            g.pause = 1;
             ggprint16(&w, 0, c3, "YOU WIN!!! <3");	 
             
         } 
@@ -1815,11 +1876,13 @@ void render()
         randomHelper(4,6,g.medium2); 
         drawBack(4,6,g.back2Texture,cards);    
         matchTriplets(4,6,cards);
+        timer(4,6);
         int count = scoreboard(4,6,&g.xres,&g.yres,&g.score,cards);
 
         if (count == 4*6) {
             g.witch = 1;
             g.trees = 1;
+            g.pause = 1;
             ggprint16(&w, 0, c3, "YOU WIN!!! <3");	 
             
         } 
@@ -1839,11 +1902,13 @@ void render()
         randomHelper(5,6,g.medium3); 
         drawBack(5,6,g.back2Texture,cards);    
         matchTriplets(5,6,cards);
+        timer(5,6); 
         int count = scoreboard(5,6,&g.xres,&g.yres,&g.score,cards);
 
         if (count == 5*6) {
             g.witch = 1;
             g.trees = 1;
+            g.pause = 1;
             ggprint16(&w, 0, c3, "YOU WIN!!! <3");	 
             
         } 
@@ -1864,11 +1929,13 @@ void render()
         randomHelper(4,5,g.hard1); 
         drawBack(4,5,g.back3Texture,cards);    
         matchQuadruplets(4,5,cards);
+        timer(4,5); 
         int count = scoreboard(4,5,&g.xres,&g.yres,&g.score,cards);
 
         if (count == 4*5) {
             g.witch = 1;
             g.trees = 1;
+            g.pause = 1;
             ggprint16(&w, 0, c3, "YOU WIN!!! <3");	 
             
         } 
@@ -1889,11 +1956,13 @@ void render()
         randomHelper(4,7,g.hard2); 
         drawBack(4,7,g.back3Texture,cards);    
         matchQuadruplets(4,7,cards);
+        timer(4,7); 
         int count = scoreboard(4,7,&g.xres,&g.yres,&g.score,cards);
 
         if (count == 4*7) {
             g.witch = 1;
             g.trees = 1;
+            g.pause = 1;
             ggprint16(&w, 0, c3, "YOU WIN!!! <3");	 
             
         } 
@@ -1914,11 +1983,13 @@ void render()
         randomHelper(4,8,g.hard3); 
         drawBack(4,8,g.back3Texture,cards);    
         matchQuadruplets(4,8,cards);
+        timer(4,8);
         int count = scoreboard(4,8,&g.xres,&g.yres,&g.score,cards);
 
         if (count == 4*8) {
             g.witch = 1;
             g.trees = 1;
+            g.pause = 1;
             ggprint16(&w, 0, c3, "YOU WIN!!! <3");	 
             
         } 
