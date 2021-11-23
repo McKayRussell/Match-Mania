@@ -169,7 +169,7 @@ Image img[13] = {
 "./images/thanks2.jpg",
 "./images/christmas.jpg",
 "./images/back5.jpg",
-"./images/back4.jpg"
+"./images/back4.JPG"
 };
 
 Image card[10] = {

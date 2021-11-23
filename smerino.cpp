@@ -349,7 +349,7 @@ void initialize_clock()
 
 void mouse_over_button(int action, int* menu, int* round1, int* round2
 	, int* round3, int* med1, int* med2, int* med3, int* hard1,
-	int* hard2, int* hard3, int* rand)
+	int* hard2, int* hard3, int* rand, float* time)
 {
 	if (*menu == 1) {
 		for (int i = 0; i < buttonNum; i++) {
@@ -362,32 +362,44 @@ void mouse_over_button(int action, int* menu, int* round1, int* round2
 					// go to round
 					if (i == 0){
 						*round1 ^= 1;
+                        *time = 60;
 						resetCards(3, 4, cards);
 						break;
 					}
-					if (i == 1){
+					if (i == 1) {
 						*round2 ^= 1;
+                        *time = 75;
 					}
-					if (i == 2){
+					if (i == 2) {
 						*round3 ^= 1;
-					}
+				        *time = 90;
+                    }
 					if (i == 3) {
 						*med1 ^= 1;
-					}
+					    *time = 90;
+                    }
 					if (i == 4) {
 						*med2 ^= 1;
-					}
+					    *time = 105;
+					
+                    }
 					if (i == 5) {
 						*med3 ^= 1;
-					}
+					    *time = 120;
+					
+                    }
 					if (i == 6) {
 						*hard1 ^= 1;
-					}
+					    *time = 120;
+					
+                    }
 					if (i == 7) {
 						*hard2 ^= 1;
-					}
+					    *time = 150;
+                    }
 					if (i == 8) {
 						*hard3 ^= 1;
+                        *time = 180;
 					}
 					for (int i=0; i<5; i++) {
 						for (int j=0; j<8; j++) {
@@ -502,7 +514,7 @@ void draw_menu_buttons()
  * Trying to create a timer
  * NOTE : Tried to make this task multithreaded: 1 thread handles the clock
  * 	so the rest of the application doesnt wait wehn calling sleep(); 
- *  Did not work
+ *  Did not work. Will come back to it. 
  * 
  * 
  * *******************************************************************/
