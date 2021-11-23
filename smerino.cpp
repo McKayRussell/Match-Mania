@@ -373,33 +373,47 @@ void mouse_over_button(int action, int* menu, int* round1, int* round2
 					if (i == 2) {
 						*round3 ^= 1;
 				        *time = 90;
+						resetCards(5, 8, cards);
+						break;
                     }
 					if (i == 3) {
 						*med1 ^= 1;
 					    *time = 90;
+						resetCards(4, 5, cards);
+						break;
                     }
 					if (i == 4) {
 						*med2 ^= 1;
 					    *time = 105;
+						resetCards(4, 5, cards);
+						break;
 					
                     }
 					if (i == 5) {
 						*med3 ^= 1;
 					    *time = 120;
+						resetCards(4, 5, cards);
+						break;
 					
                     }
 					if (i == 6) {
 						*hard1 ^= 1;
 					    *time = 120;
+						resetCards(4, 5, cards);
+						break;
 					
                     }
 					if (i == 7) {
 						*hard2 ^= 1;
 					    *time = 150;
+						resetCards(4, 5, cards);
+						break;
                     }
 					if (i == 8) {
 						*hard3 ^= 1;
                         *time = 180;
+						resetCards(4, 5, cards);
+						break;
 					}
 					for (int i=0; i<5; i++) {
 						for (int j=0; j<8; j++) {
