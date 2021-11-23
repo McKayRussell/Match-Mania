@@ -32,17 +32,6 @@ void show_dat_credits(int x, int y)
     ggprint16(&r, 16, 0x00000000, "Dat fat cat sat at a mat"); 
 }
 
-void drawBackground(int x, int y, GLuint texture) {
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glBegin(GL_QUADS);
-	    glTexCoord2f(0.0f, 1.0f); glVertex2i(0, 0);
-	    glTexCoord2f(0.0f, 0.0f); glVertex2i(0, y);
-	    glTexCoord2f(1.0f, 0.0f); glVertex2i(x, y);
-	    glTexCoord2f(1.0f, 1.0f); glVertex2i(x, 0);
-    glEnd(); 
-    glPopMatrix();
-}
-
 //make struct rectangles for texture maps
 //inputs: x,y   - the starting cordinates of the layout
 void makeCards(int row, int col, int x, int y) {
