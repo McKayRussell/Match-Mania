@@ -6,6 +6,8 @@
 using namespace std;
 
 extern struct Card cards[5][8];
+extern void initialize_score_background(int, int, int);
+extern void draw_score_background();
 
 void show_clementes_credits(int x, int y)
 {
@@ -38,11 +40,12 @@ int scoreboard(int row, int col, int* xres, int* yres, int* score,
     s.bot = *yres-50;
     s.left = *xres-150;
     int h = 10;
+    initialize_score_background(s.bot, s.left, h);
+    draw_score_background();
       
     ggprint8b(&s, h, c, "Scoreboard");
     ggprint8b(&s, h, c, "----------------");
     ggprint8b(&s, h, c, " %i", *score);
-  	
     return count; //matched cards count
 }
 
