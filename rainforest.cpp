@@ -1689,7 +1689,7 @@ void timer(int row, int col)
     Rect s;
     unsigned int c2 = 0x00ffffff;    
     s.bot = g.yres-100;
-    s.left = g.xres-100;
+    s.left = g.xres-150;
     int h = 10;
     //printf("time: %i\n", (int)g.time); 
     ggprint8b(&s, h, c2, "Time");
@@ -1719,14 +1719,6 @@ void render()
 	// 	glEnd(); 
 	// }
     
-    //scoreboard
-    /*
-    Rect s;
-    unsigned int c2 = 0x00ffffff;    
-    s.bot = g.yres-50;
-    s.left = g.xres-150;
-    int h2 = 10; */
-    //
     //win message
     Rect w;
     unsigned int c3 = 0x00000000;    
@@ -1748,38 +1740,15 @@ void render()
             //randomize cards
             random_shuffle(g.easy1, g.easy1 + 3*4);
             g.random = 0;
-
-            //test(3,4,cards);  
-           
-            /*
-            //print randomized array
-            for (int i = 0; i < 12; ++i)
-                cout << g.easy1[i] << " ";
-            cout << endl;
-            */
         }  
-        //test(3,4,cards);
-        /*      
-        for (int i=0; i<3; i++) {
-            for (int j=0; j<4; j++) {
-	            cout << cards[i][j].id << " ";
-                    
-            }
-        } 
-        cout << endl; */
-    
+        
         makeCards(3,4,g.start_x,g.start_y);
         randomHelper(3,4,g.easy1); 
         drawBack(3,4,g.cardTexture,cards);    
         matchPairs(3,4,cards);
 		int count = scoreboard(3,4,&g.xres,&g.yres,&g.score,cards);
         timer(3,4); 
-		// #pragma omp master
-		// {
-		// 	draw_clock();
-		// }
-        //
-
+		
         if (count == 3*4) {
             g.witch = 1;
             g.trees = 1;
