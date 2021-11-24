@@ -43,6 +43,7 @@ void resetCards(int row, int col, Card cards[][8])
         for (int j=0; j<col; j++) {
             cards[i][j].flip = 0; 
             cards[i][j].match = 0;
+            cards[i][j].score = 0;
         }
     }
 }
