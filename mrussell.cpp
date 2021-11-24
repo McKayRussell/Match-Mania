@@ -1,4 +1,4 @@
-//McKay Russell <3 UwU
+//McKay Russell
 //
 
 #include "fonts.h"
@@ -9,10 +9,12 @@ extern struct Card cards[5][8];
 void show_mckays_credits(int x, int y)
 {
     Rect r;
-    r.bot = y - 20;
     r.left = x;
     r.center = 1;
-    ggprint16(&r, 16, 0x00000000, "McKay did something");
+    r.bot = y + 40;
+    ggprint16(&r, 16, 0x00000000, "Prof. Gordon supplied the framework.");
+    r.bot = y - 20;
+    ggprint16(&r, 16, 0x00000000, "McKay made the cards flip.");
 }
 
 //McKay Russell

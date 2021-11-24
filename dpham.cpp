@@ -29,7 +29,7 @@ void show_dat_credits(int x, int y)
     r.bot = y;
     r.left =x;
     r.center = 1;
-    ggprint16(&r, 16, 0x00000000, "Dat fat cat sat at a mat"); 
+    ggprint16(&r, 16, 0x00000000, "Dat made multiple rounds and more."); 
 }
 
 //make struct rectangles for texture maps
