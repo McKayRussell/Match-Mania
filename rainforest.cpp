@@ -84,7 +84,7 @@ extern void randomHelper(int,int,int arr[]);
 
 extern void test(int,int,Card cards[][8]); //used for testing
 //
-void extern flipCard(int,int,int,int,float,float,int,Card cards[][8]);
+void extern flipCard(int,int,int,int,float,int,Card cards[][8]);
 //void drawCardFront(int row, int col, float w);
 void resetCards(int, int, Card cards[][8]);
 
@@ -1054,25 +1054,25 @@ void checkMouse(XEvent *e)
 			//flipCard(mx,my);
             if (g.easy_r1)
                 //flipCard(mx,my,3,4);
-                flipCard(mx,my,3,4,g.start_x,g.start_y,yres,cards);
+                flipCard(mx,my,3,4,g.start_x,yres,cards);
 			if (g.easy_r2)
-                flipCard(mx,my,4,4,g.start_x,g.start_y,yres,cards);
+                flipCard(mx,my,4,4,g.start_x,yres,cards);
             if (g.easy_r3)
-                flipCard(mx,my,4,5,g.start_x,g.start_y,yres,cards);
+                flipCard(mx,my,4,5,g.start_x,yres,cards);
             //
             if (g.med_r1)
-                flipCard(mx,my,3,5,g.start_x,g.start_y,yres,cards);
+                flipCard(mx,my,3,5,g.start_x,yres,cards);
             if (g.med_r2)
-                flipCard(mx,my,4,6,g.start_x,g.start_y,yres,cards);
+                flipCard(mx,my,4,6,g.start_x,yres,cards);
             if (g.med_r3)
-                flipCard(mx,my,5,6,g.start_x,g.start_y,yres,cards);
+                flipCard(mx,my,5,6,g.start_x,yres,cards);
             //
             if (g.hard_r1)
-                flipCard(mx,my,4,5,g.start_x,g.start_y,yres,cards);
+                flipCard(mx,my,4,5,g.start_x,yres,cards);
             if (g.hard_r2)
-                flipCard(mx,my,4,7,g.start_x,g.start_y,yres,cards);
+                flipCard(mx,my,4,7,g.start_x,yres,cards);
             if (g.hard_r3)
-                flipCard(mx,my,5,8,g.start_x,g.start_y,yres,cards);
+                flipCard(mx,my,5,8,g.start_x,yres,cards);
 		}
 		if (e->xbutton.button==3) {
 			//Right button is down
