@@ -1,7 +1,6 @@
 //Dat Pham
 //
-//Note: I have another function in rainforest.cpp called pickCard(). It
-//needs to be there to work and is not possible to bring it over.
+//Note: I have another function in rainforest.cpp called pickCard(). 
 //
 #include <GL/glx.h>
 #include "fonts.h"
