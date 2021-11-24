@@ -1012,7 +1012,7 @@ void init() {
 	//initialize buttons...
 	initialize_buttons();
 	//initialize_clock
-	initialize_clock();
+	// initialize_clock();
 
 }
 // Mouse Button Clicked
@@ -1772,13 +1772,13 @@ void render()
         randomHelper(3,4,g.easy1); 
         drawBack(3,4,g.cardTexture,cards);    
         matchPairs(3,4,cards);
+		int count = scoreboard(3,4,&g.xres,&g.yres,&g.score,cards);
         timer(3,4); 
 		// #pragma omp master
 		// {
 		// 	draw_clock();
 		// }
         //
-        int count = scoreboard(3,4,&g.xres,&g.yres,&g.score,cards);
 
         if (count == 3*4) {
             g.witch = 1;
@@ -1802,8 +1802,8 @@ void render()
         randomHelper(4,4,g.easy2); 
         drawBack(4,4,g.cardTexture,cards);    
         matchPairs(4,4,cards);
-        timer(4,4); 
         int count = scoreboard(4,4,&g.xres,&g.yres,&g.score,cards);
+		timer(4,4); 
 
         if (count == 4*4) {
             g.witch = 1;
@@ -1827,8 +1827,8 @@ void render()
         randomHelper(4,5,g.easy3); 
         drawBack(4,5,g.cardTexture,cards);    
         matchPairs(4,5,cards); 
-        timer(4,5); 
         int count = scoreboard(4,5,&g.xres,&g.yres,&g.score,cards);
+		timer(4,5); 
 
         if (count == 4*5) {
             g.witch = 1;
@@ -1851,8 +1851,8 @@ void render()
         randomHelper(3,5,g.medium1); 
         drawBack(3,5,g.back2Texture,cards);    
         matchTriplets(3,5,cards);
-        timer(3,5); 
         int count = scoreboard(3,5,&g.xres,&g.yres,&g.score,cards);
+		timer(3,5); 
     
         if (count == 3*5) {
             g.witch = 1;
@@ -1876,8 +1876,8 @@ void render()
         randomHelper(4,6,g.medium2); 
         drawBack(4,6,g.back2Texture,cards);    
         matchTriplets(4,6,cards);
-        timer(4,6);
         int count = scoreboard(4,6,&g.xres,&g.yres,&g.score,cards);
+		timer(4,6);
 
         if (count == 4*6) {
             g.witch = 1;
@@ -1902,8 +1902,8 @@ void render()
         randomHelper(5,6,g.medium3); 
         drawBack(5,6,g.back2Texture,cards);    
         matchTriplets(5,6,cards);
-        timer(5,6); 
         int count = scoreboard(5,6,&g.xres,&g.yres,&g.score,cards);
+		timer(5,6); 
 
         if (count == 5*6) {
             g.witch = 1;
@@ -1929,8 +1929,8 @@ void render()
         randomHelper(4,5,g.hard1); 
         drawBack(4,5,g.back3Texture,cards);    
         matchQuadruplets(4,5,cards);
-        timer(4,5); 
         int count = scoreboard(4,5,&g.xres,&g.yres,&g.score,cards);
+		timer(4,5); 
 
         if (count == 4*5) {
             g.witch = 1;
@@ -1956,8 +1956,8 @@ void render()
         randomHelper(4,7,g.hard2); 
         drawBack(4,7,g.back3Texture,cards);    
         matchQuadruplets(4,7,cards);
-        timer(4,7); 
         int count = scoreboard(4,7,&g.xres,&g.yres,&g.score,cards);
+		timer(4,7); 
 
         if (count == 4*7) {
             g.witch = 1;
@@ -1983,8 +1983,8 @@ void render()
         randomHelper(4,8,g.hard3); 
         drawBack(4,8,g.back3Texture,cards);    
         matchQuadruplets(4,8,cards);
-        timer(4,8);
         int count = scoreboard(4,8,&g.xres,&g.yres,&g.score,cards);
+		timer(4,8);
 
         if (count == 4*8) {
             g.witch = 1;

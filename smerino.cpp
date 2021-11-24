@@ -37,15 +37,17 @@ int buttonNum = 0;
 class t_square {
 public:
 	Rect r;
-	char time[32];
 	int blink;
-	float clock_color[3];
-	float clock_dcolor[3];
-	unsigned int clock_text_color;
+	float color[3];
+	float dcolor[3];
 } square;
 
 void initialize_buttons() 
 {
+	/*************************************************
+	 * ATTEMPTING TO CONDENSE IN FOR LOOP
+	 * DOES NO OPERATE CORRECTLY YET
+	 *************************************************/
 	//initialize buttons...
 	// int left = 100;
 	// // char r_number[32];
@@ -296,8 +298,9 @@ void initialize_buttons()
 /*********************************************************************
  * 
  * Exits Buttons
- * NOTE : Working on condensing this into for loops but this unable to
- * 			do so
+ * NOTE : Working on condensing this into for loops but unable
+ *  		to do so yet
+ * 
  * 
  * *******************************************************************/
 	// Easy Round 1 Exit Button
@@ -325,26 +328,24 @@ void initialize_buttons()
 	// buttonNum++;
 }
 
-void initialize_clock() 
+void initialize_score_background(int bottom, int left, int hght) 
 {
 	square.r.width = 200;
-	square.r.height = 75;
-	square.r.left = 100;
-	square.r.bot = 205;
+	square.r.height = hght + 100;
+	square.r.left = left - 100;
+	square.r.bot = bottom - 75;
 	square.r.right =
 		square.r.left + square.r.width;
 	square.r.top = square.r.bot + square.r.height;
 	square.r.centerx = (square.r.left + square.r.right) / 2;
 	square.r.centery = (square.r.bot + square.r.top) / 2;
-	strcpy(square.time, "Ready!");
-	square.clock_color[0] = 0.0f;
-	square.clock_color[1] = 0.0f;
-	square.clock_color[2] = 0.0f;
-	square.clock_dcolor[0] = square.clock_color[0] * 0.0f;
-	square.clock_dcolor[1] = square.clock_color[1] * 0.0f;
-	square.clock_dcolor[2] = square.clock_color[2] * 0.0f;
-	square.clock_text_color = 0x00ffffff;
-	square.blink = 0;
+	square.color[0] = 0.0f;
+	square.color[1] = 0.0f;
+	square.color[2] = 0.0f;
+	square.dcolor[0] = square.color[0] * 0.0f;
+	square.dcolor[1] = square.color[1] * 0.0f;
+	square.dcolor[2] = square.color[2] * 0.0f;
+	square.blink = 1;
 }
 
 void mouse_over_button(int action, int* menu, int* round1, int* round2
@@ -523,6 +524,15 @@ void draw_menu_buttons()
 	}
 }
 
+void show_steven_credits(int x, int y)
+{
+    Rect r;
+    r.bot = y - 40;
+    r.left = x;
+    r.center = 1;
+    ggprint16(&r, 16, 0x00000000, "Steven made the buttons work.");
+
+}
 /*********************************************************************
  * 
  * Trying to create a timer
@@ -533,85 +543,68 @@ void draw_menu_buttons()
  * 
  * *******************************************************************/
 
-// void draw_clock() 
+void draw_score_background() 
+{
+	for (int i = 0; i < 10; i++) {
+		if (square.blink) {
+			glColor3f(1.0f, 0.0f, 0.0f);
+			//draw a highlight around button
+			glLineWidth(2);
+			glBegin(GL_LINE_LOOP);
+				glVertex2i(square.r.left-2,  square.r.bot-2);
+				glVertex2i(square.r.left-2,  square.r.top+2);
+				glVertex2i(square.r.right+2, square.r.top+2);
+				glVertex2i(square.r.right+2, square.r.bot-2);
+				glVertex2i(square.r.left-2,  square.r.bot-2);
+			glEnd();
+			glLineWidth(1);
+		}
+	}
+
+	glBegin(GL_QUADS);
+		glVertex2i(square.r.left,  square.r.bot);
+		glVertex2i(square.r.left,  square.r.top);
+		glVertex2i(square.r.right, square.r.top);
+		glVertex2i(square.r.right, square.r.bot);
+	glEnd();
+}
+
+// CALL TO DRAW EXIT BUTTONS IN ROUNDS
+
+// void draw_exit_button(int round)
 // {
 // 	Rect r;
-// 	for (int i = 0; i < 10; i++) {
-// 		if (i < 35) {
-// 			square.blink = 1;
-// 		}
-// 		if (square.blink) {
-// 			glColor3f(1.0f, 0.0f, 0.0f);
-// 			//draw a highlight around button
-// 			glLineWidth(2);
-// 			glBegin(GL_LINE_LOOP);
-// 				glVertex2i(square.r.left-2,  square.r.bot-2);
-// 				glVertex2i(square.r.left-2,  square.r.top+2);
-// 				glVertex2i(square.r.right+2, square.r.top+2);
-// 				glVertex2i(square.r.right+2, square.r.bot-2);
-// 				glVertex2i(square.r.left-2,  square.r.bot-2);
-// 			glEnd();
-// 			glLineWidth(1);
-// 		}
-// 		sleep(1);
-// 		// ggprint16(&r, 0, square.clock_text_color, ("%d seconds remaining!", i));
+// 	round = round + 8;
+// 	if (button[round].over) {
+// 		glColor3f(1.0f, 0.0f, 0.0f);
+// 		//draw a highlight around button
+// 		glLineWidth(2);
+// 		glBegin(GL_LINE_LOOP);
+// 			glVertex2i(button[round].r.left-2,  button[round].r.bot-2);
+// 			glVertex2i(button[round].r.left-2,  button[round].r.top+2);
+// 			glVertex2i(button[round].r.right+2, button[round].r.top+2);
+// 			glVertex2i(button[round].r.right+2, button[round].r.bot-2);
+// 			glVertex2i(button[round].r.left-2,  button[round].r.bot-2);
+// 		glEnd();
+// 		glLineWidth(1);
 // 	}
-
+// 	if (button[round].down) {
+// 		glColor3fv(button[round].dcolor);
+// 	} else {
+// 		glColor3fv(button[round].color);
+// 	}
 // 	glBegin(GL_QUADS);
-// 		glVertex2i(square.r.left,  square.r.bot);
-// 		glVertex2i(square.r.left,  square.r.top);
-// 		glVertex2i(square.r.right, square.r.top);
-// 		glVertex2i(square.r.right, square.r.bot);
+// 		glVertex2i(button[round].r.left,  button[round].r.bot);
+// 		glVertex2i(button[round].r.left,  button[round].r.top);
+// 		glVertex2i(button[round].r.right, button[round].r.top);
+// 		glVertex2i(button[round].r.right, button[round].r.bot);
 // 	glEnd();
-// 	r.left = square.r.centerx;
-// 	r.bot  = square.r.centery - 8;
+// 	r.left = button[round].r.centerx;
+// 	r.bot  = button[round].r.centery - 8;
 // 	r.center = 1;
+// 	if (button[round].down) {
+// 		ggprint16(&r, 0, button[round].text_color, "Goodluck!");
+// 	} else {
+// 		ggprint16(&r, 0, button[round].text_color, button[round].text);
+// 	}
 // }
-
-void draw_exit_button(int round)
-{
-	Rect r;
-	round = round + 8;
-	if (button[round].over) {
-		glColor3f(1.0f, 0.0f, 0.0f);
-		//draw a highlight around button
-		glLineWidth(2);
-		glBegin(GL_LINE_LOOP);
-			glVertex2i(button[round].r.left-2,  button[round].r.bot-2);
-			glVertex2i(button[round].r.left-2,  button[round].r.top+2);
-			glVertex2i(button[round].r.right+2, button[round].r.top+2);
-			glVertex2i(button[round].r.right+2, button[round].r.bot-2);
-			glVertex2i(button[round].r.left-2,  button[round].r.bot-2);
-		glEnd();
-		glLineWidth(1);
-	}
-	if (button[round].down) {
-		glColor3fv(button[round].dcolor);
-	} else {
-		glColor3fv(button[round].color);
-	}
-	glBegin(GL_QUADS);
-		glVertex2i(button[round].r.left,  button[round].r.bot);
-		glVertex2i(button[round].r.left,  button[round].r.top);
-		glVertex2i(button[round].r.right, button[round].r.top);
-		glVertex2i(button[round].r.right, button[round].r.bot);
-	glEnd();
-	r.left = button[round].r.centerx;
-	r.bot  = button[round].r.centery - 8;
-	r.center = 1;
-	if (button[round].down) {
-		ggprint16(&r, 0, button[round].text_color, "Goodluck!");
-	} else {
-		ggprint16(&r, 0, button[round].text_color, button[round].text);
-	}
-}
-
-void show_steven_credits(int x, int y)
-{
-    Rect r;
-    r.bot = y - 40;
-    r.left = x;
-    r.center = 1;
-    ggprint16(&r, 16, 0x00000000, "Steven made the buttons work.");
-
-}
